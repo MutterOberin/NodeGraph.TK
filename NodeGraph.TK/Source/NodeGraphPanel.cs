@@ -1652,7 +1652,7 @@ namespace NodeGraph.TK
         private void UpdateFontSize()
         {
 
-            this.m_NodeScaledTitleFont = new Font(m_NodeTitleFont.Name, m_NodeTitleFont.Size * this.View.ViewZoomCurrent);
+            this.m_NodeScaledTitleFont     = new Font(m_NodeTitleFont.Name, m_NodeTitleFont.Size * this.View.ViewZoomCurrent);
             this.m_NodeScaledConnectorFont = new Font(m_NodeConnectorFont.Name, m_NodeConnectorFont.Size * this.View.ViewZoomCurrent);
 
         }
