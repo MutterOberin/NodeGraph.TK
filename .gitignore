@@ -1,0 +1,32 @@
+# Visual Studio Stuff
+# =====================
+*.opensdf
+*.sdf
+*.user
+*.nvuser
+*.ReSharper
+*.suo
+*.psess
+*.vsp
+
+# Visual Studio Folders
+# =====================
+.vs
+packages
+bin_any
+bin_any_debug
+bin_x64
+bin_x64_debug
+bin_x86
+bin_x86_debug
+
+NodeGraph.TK/obj
+NodeGraph.TK.Example/obj
+.vs
+
+# Binary Stuff
+# =====================
+
+
+# Tempo Folder Content
+# =====================
