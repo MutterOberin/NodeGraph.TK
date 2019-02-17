@@ -671,15 +671,13 @@ namespace NodeGraph.TK
         }
 
         #endregion
-
-        [Browsable(false)]
+        
         public NodeGraphView View
         {
             get { return this.view; }
             set { this.view = value; }
         }
 
-        [Browsable(false)]
         public NodeGraphGraph Graph
         {
             get { return this.graph; }
@@ -1736,11 +1734,11 @@ namespace NodeGraph.TK
 
         private void NodeGraphPanel_Load(object sender, EventArgs e)
         {
-            GL_Setup();
-            GL_Setup_Viewport();
-            GL_Setup_Camera();
+            //GL_Setup();
+            //GL_Setup_Viewport();
+            //GL_Setup_Camera();
 
-            gl_timer.Enabled = true;
+            //gl_timer.Enabled = true;
         }
 
         private void GL_Setup()

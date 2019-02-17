@@ -52,11 +52,11 @@ namespace NodeGraph.TK
         public NodeGraphView(NodeGraphPanel panel, NodeGraphGraph graph)
         {
             this.graph           = graph;
+            this.panel           = panel;
             this.ViewX           = 0;
             this.ViewY           = 0;
             this.ViewZoom        = 1.0f;
             this.ViewZoomCurrent = 1.0f;
-            this.panel           = panel;
         }
 
         #endregion

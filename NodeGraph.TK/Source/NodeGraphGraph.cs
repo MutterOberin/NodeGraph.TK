@@ -61,24 +61,24 @@ namespace NodeGraph.TK
         /// </summary>
         public List<NodeGraphNode> Nodes
         {
-            get { return nodes; }
-            set { nodes = value; }
+            get { return this.nodes; }
+            set { this.nodes = value; }
         }
         /// <summary>
         /// The collection of currently Selected nodes in this view
         /// </summary>
         public List<NodeGraphNode> NodesSelected
         {
-            get { return nodesSelected; }
-            set { nodesSelected = value; }
+            get { return this.nodesSelected; }
+            set { this.nodesSelected = value; }
         }
         /// <summary>
         /// The collection of Links created in this view
         /// </summary>
         public List<NodeGraphLink> Links
         {
-            get { return links; }
-            set { links = value; }
+            get { return this.links; }
+            set { this.links = value; }
         }
 
         #endregion
@@ -88,17 +88,17 @@ namespace NodeGraph.TK
         /// <summary>
         /// Returns the Node Index of the NodeGraphNode in this graphs's collection
         /// </summary>
-        public int GetNodeIndex(NodeGraphNode p_Node)
+        public int GetNodeIndex(NodeGraphNode node)
         {
-            return this.nodes.FindIndex(x => x == p_Node);
+            return this.nodes.FindIndex(x => x == node);
         }
 
         /// <summary>
         /// Returns the Node Index of the NodeGraphNode in this graphs's current selection
         /// </summary>
-        public int GetNodeIndexSelected(NodeGraphNode p_Node)
+        public int GetNodeIndexSelected(NodeGraphNode node)
         {
-            return this.nodesSelected.FindIndex(x => x == p_Node);
+            return this.nodesSelected.FindIndex(x => x == node);
         }
 
         #endregion
