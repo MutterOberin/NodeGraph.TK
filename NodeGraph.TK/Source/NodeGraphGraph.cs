@@ -36,6 +36,8 @@ namespace NodeGraph.TK
     {
         #region - Private Variables -
 
+        private string name;
+
         private List<NodeGraphNode> nodes;
         private List<NodeGraphNode> nodesSelected;
         private List<NodeGraphLink> links;
@@ -44,7 +46,7 @@ namespace NodeGraph.TK
 
         #region - Constructors -
 
-        public NodeGraphGraph()
+        public NodeGraphGraph(string name)
         {
             this.nodes         = new List<NodeGraphNode>();
             this.nodesSelected = new List<NodeGraphNode>();
@@ -80,6 +82,11 @@ namespace NodeGraph.TK
             get { return this.links; }
             set { this.links = value; }
         }
+
+        /// <summary>
+        /// Gets / Sets the Name of this Graph
+        /// </summary>
+        public string Name { get => this.name; set => this.name = value; }
 
         #endregion
 

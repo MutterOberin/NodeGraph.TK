@@ -32,7 +32,7 @@ using System.Drawing;
 using System.Windows.Forms;
 
 using System.Xml;
-using NodeGraph.TK.Source;
+
 using OpenTK;
 
 namespace NodeGraph.TK
@@ -44,26 +44,25 @@ namespace NodeGraph.TK
     {
         #region - Private Variables -
 
-        protected SolidBrush nodeFill;
+        private static uint count;
+
+        protected Vector4 color_fill;
 
         protected uint id;
 
-        protected float x;
-        protected float y;
+        protected Vector3 position;
         protected float height;
         protected float width;
 
         protected bool selected;
         protected bool selectable;
-        protected string comment;
 
         protected string name;
+        protected string comment;
 
         protected NodeGraphView view;
 
         protected List<NodeGraphConnector> connectors;
-
-        private static uint count;
 
         public event PaintEventHandler PostDraw;
 
@@ -78,12 +77,12 @@ namespace NodeGraph.TK
         /// <param name="p_Y"></param>
         /// <param name="view"></param>
         /// <param name="selectable"></param>
-        public NodeGraphNode(float X, float Y, NodeGraphView view, bool selectable)
+        public NodeGraphNode(float X, float Y, NodeGraphView view, bool selectable = true)
         {
             this.id = count; count++;
 
-            this.x          = X;
-            this.y          = Y;
+            this.position.X = X;
+            this.position.Y = Y;
             this.view       = view;
             this.width      = 128;
             this.height     = 64;
@@ -91,13 +90,6 @@ namespace NodeGraph.TK
             this.selected   = false;
             this.selectable = selectable;
             this.comment    = "";
-
-            //Point p = new Point(view.ParentPanel.Location.X + view.ParentPanel.Width / 2,
-            //                    view.ParentPanel.Location.Y + view.ParentPanel.Height / 2);
-
-            //this.guiLoc = view.ParentPanel.PointToScreen(p);
-
-            this.UpdateHitRectangle();
 
             this.connectors = new List<NodeGraphConnector>();
         }
@@ -112,8 +104,8 @@ namespace NodeGraph.TK
         [Category("Node Properties")]
         public Color NodeFillColor
         {
-            get { return this.nodeFill.Color; }
-            set { this.nodeFill = new SolidBrush(value); }
+            get { return NodeGraphUtil.VectorToColor(this.color_fill); }
+            set { this.color_fill = NodeGraphUtil.ColorToVector4(value); }
         }
 
         /// <summary>
@@ -146,32 +138,41 @@ namespace NodeGraph.TK
         }
 
         /// <summary>
-        /// X Position (ViewSpace) of the Node
+        /// Position in X (ViewSpace) of the Node
         /// </summary>
         [Category("Node Properties")]
-        public float X
+        public Vector3 Position
         {
-            get { return this.x; }
+            get { return this.position; }
             set
             {
-                this.x = value;
-
-                this.UpdateHitRectangle();
+                this.position = value;
             }
         }
 
         /// <summary>
-        /// Y Position (ViewSpace) of the Node
+        /// Position in X (ViewSpace) of the Node
+        /// </summary>
+        [Category("Node Properties")]
+        public float X
+        {
+            get { return this.position.X; }
+            set
+            {
+                this.position.X = value;
+            }
+        }
+
+        /// <summary>
+        /// Position in Y (ViewSpace) of the Node
         /// </summary>
         [Category("Node Properties")]
         public float Y
         {
-            get { return this.y; }
+            get { return this.position.Y; }
             set
             {
-                this.y = value;
-
-                this.UpdateHitRectangle();
+                this.position.Y = value;
             }
         }
 
@@ -185,8 +186,6 @@ namespace NodeGraph.TK
             set
             {
                 this.width = value;
-
-                this.UpdateHitRectangle();
             }
         }
 
@@ -200,8 +199,6 @@ namespace NodeGraph.TK
             set
             {
                 this.height = value;
-
-                this.UpdateHitRectangle();
             }
         }
 
@@ -286,14 +283,6 @@ namespace NodeGraph.TK
         }
 
         /// <summary>
-        /// Updates HitRectangle (when moved)
-        /// </summary>
-        public void UpdateHitRectangle()
-        {
-            this.HitRectangle = new RectangleF(x, y, Width, Height);
-        }
-
-        /// <summary>
         /// Intercepts a mouse hit and returns a NodeGraphConnector if hit by the mouse, null otherwise
         /// </summary>
         /// <param name="p_ScreenPosition"></param>
@@ -318,52 +307,52 @@ namespace NodeGraph.TK
         /// <param name="e"></param>
         public virtual void Draw(PaintEventArgs e)
         {
-            Vector2 CtrlPos = view.Panel.ViewToControl(new Vector2(x, y));
+            //Vector2 CtrlPos = view.Panel.ViewToControl(new Vector2(x, y));
 
-            float ScaledX = CtrlPos.X;
-            float ScaledY = CtrlPos.Y;
+            //float ScaledX = CtrlPos.X;
+            //float ScaledY = CtrlPos.Y;
 
-            Rectangle ViewRectangle = new Rectangle((int)CtrlPos.X,
-                                                    (int)CtrlPos.Y,
-                                                    (int)(this.HitRectangle.Width * view.ViewZoomCurrent),
-                                                    (int)(this.HitRectangle.Height * view.ViewZoomCurrent)
-                                                    );
+            //Rectangle ViewRectangle = new Rectangle((int)CtrlPos.X,
+            //                                        (int)CtrlPos.Y,
+            //                                        (int)(this.HitRectangle.Width * view.ViewZoomCurrent),
+            //                                        (int)(this.HitRectangle.Height * view.ViewZoomCurrent)
+            //                                        );
             // NODE SHADOW
-            if (this.ParentView.Panel.DrawShadow)
+            if (this.ParentView.Panel.EnableShadow)
             {
                 //e.Graphics.DrawImage(NodeGraphResources.NodeShadow, ParentView.Panel.ViewToControl(new Rectangle(this.x - (int)(0.1f * this.Width) + 4,
                 //                                                                                                       this.y - (int)(0.1f * this.Height) + 4,
                 //                                                                                                       this.Width + (int)(0.2f * this.Width) - 4,
                 //                                                                                                       this.Height + (int)(0.2f * this.Height) - 4)));
             }
-            // NODE
-            if (!this.Selected)
-            {
-                if (nodeFill != null)
-                    e.Graphics.FillRectangle(nodeFill, ViewRectangle);
-                else
-                    e.Graphics.FillRectangle(view.Panel.NodeFill, ViewRectangle);
+            //// NODE
+            //if (!this.Selected)
+            //{
+            //    if (nodeFill != null)
+            //        e.Graphics.FillRectangle(nodeFill, ViewRectangle);
+            //    else
+            //        e.Graphics.FillRectangle(view.Color_node_fill, ViewRectangle);
 
-                e.Graphics.FillRectangle(view.Panel.NodeHeaderFill, new Rectangle(ViewRectangle.X, ViewRectangle.Y, ViewRectangle.Width, (int)(view.Panel.NodeHeaderSize * view.ViewZoomCurrent)));
-                e.Graphics.DrawRectangle(view.Panel.NodeOutline, ViewRectangle);
-            }
-            else
-            {
-                e.Graphics.FillRectangle(view.Panel.NodeFillSelected, ViewRectangle);
-                e.Graphics.FillRectangle(view.Panel.NodeHeaderFill, new Rectangle(ViewRectangle.X, ViewRectangle.Y, ViewRectangle.Width, (int)(view.Panel.NodeHeaderSize * view.ViewZoomCurrent)));
-                e.Graphics.DrawRectangle(view.Panel.NodeOutlineSelected, ViewRectangle);
-            }
+            //    e.Graphics.FillRectangle(view.NodeHeaderFill, new Rectangle(ViewRectangle.X, ViewRectangle.Y, ViewRectangle.Width, (int)(view.NodeHeaderSize * view.ViewZoomCurrent)));
+            //    e.Graphics.DrawRectangle(view.NodeOutline, ViewRectangle);
+            //}
+            //else
+            //{
+            //    e.Graphics.FillRectangle(view.color, ViewRectangle);
+            //    e.Graphics.FillRectangle(view.NodeHeaderFill, new Rectangle(ViewRectangle.X, ViewRectangle.Y, ViewRectangle.Width, (int)(view.NodeHeaderSize * view.ViewZoomCurrent)));
+            //    e.Graphics.DrawRectangle(view.Panel.NodeOutlineSelected, ViewRectangle);
+            //}
 
             // VALID/INVALID NODE
             // Removed
 
             // IF SUFFICENT ZOOM LEVEL = DRAW TEXT
-            if (view.ViewZoomCurrent > view.Panel.NodeTitleZoomThreshold)
-            {
-                // DrawText
-                //e.Graphics.DrawString(this.Name, view.Panel.NodeScaledTitleFont, view.Panel.NodeTextShadow, new Point(ScaledX + (int)(2 * view.ViewZoomCurrent) + 1, ScaledY + (int)(2 * view.ViewZoomCurrent) + 1));
-                //e.Graphics.DrawString(this.Name, view.Panel.NodeScaledTitleFont, view.Panel.NodeText, new Point(ScaledX + (int)(2 * view.ViewZoomCurrent), ScaledY + (int)(2 * view.ViewZoomCurrent)));
-            }
+            //if (view.ViewZoomCurrent > view.Panel.NodeTitleZoomThreshold)
+            //{
+            //    // DrawText
+            //    //e.Graphics.DrawString(this.Name, view.Panel.NodeScaledTitleFont, view.Panel.NodeTextShadow, new Point(ScaledX + (int)(2 * view.ViewZoomCurrent) + 1, ScaledY + (int)(2 * view.ViewZoomCurrent) + 1));
+            //    //e.Graphics.DrawString(this.Name, view.Panel.NodeScaledTitleFont, view.Panel.NodeText, new Point(ScaledX + (int)(2 * view.ViewZoomCurrent), ScaledY + (int)(2 * view.ViewZoomCurrent)));
+            //}
 
             //InputConnectors
             for (int i_ConnectorIndex = 0; i_ConnectorIndex < this.connectors.Count; i_ConnectorIndex++)

@@ -36,8 +36,8 @@ namespace NodeGraph.TK
     {
         #region - Private Variables -
 
-        private NodeGraphConnector inputConnector;
-        private NodeGraphConnector outputConnector;
+        private NodeGraphConnector input;
+        private NodeGraphConnector output;
 
         #endregion
 
@@ -46,12 +46,10 @@ namespace NodeGraph.TK
         /// <summary>
         /// Creates a new NodeGraphLink, given input and output Connectors
         /// </summary>
-        /// <param name="p_Input"></param>
-        /// <param name="p_Output"></param>
-        public NodeGraphLink(NodeGraphConnector p_Input, NodeGraphConnector p_Output)
+        public NodeGraphLink(NodeGraphConnector input, NodeGraphConnector output)
         {
-            this.inputConnector  = p_Input;
-            this.outputConnector = p_Output;
+            this.input  = input;
+            this.output = output;
         }
 
         #endregion
@@ -63,7 +61,7 @@ namespace NodeGraph.TK
         /// </summary>
         public NodeGraphConnector Input
         {
-            get { return this.inputConnector; }
+            get { return this.input; }
         }
 
         /// <summary>
@@ -71,7 +69,7 @@ namespace NodeGraph.TK
         /// </summary>
         public NodeGraphConnector Output
         {
-            get { return this.outputConnector; }
+            get { return this.output; }
         }
 
         #endregion

@@ -1,27 +1,4 @@
-﻿/*
-
-Copyright (c) 2011, Thomas ICHE
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
-following conditions are met:
-
-        * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-        * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer 
-          in the documentation and/or other materials provided with the distribution.
-        * Neither the name of PeeWeeK.NET nor the names of its contributors may be used to endorse or promote products derived from this 
-          software without specific prior written permission.
-
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, 
-OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
-OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-namespace NodeGraph.TK
+﻿namespace NodeGraph.TK
 {
     partial class NodeGraphPanel
     {
@@ -51,36 +28,48 @@ namespace NodeGraph.TK
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.gl_timer = new System.Windows.Forms.Timer(this.components);
+            this.ViewGL = new NodeGraphGL();
+            this.NodeGraphPanel_Debug = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
-            // gl_timer
+            // ViewGL
             // 
-            this.gl_timer.Interval = 30;
-            this.gl_timer.Tick += new System.EventHandler(this.gl_timer_Tick);
+            this.ViewGL.BackColor = System.Drawing.Color.Black;
+            this.ViewGL.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ViewGL.Location = new System.Drawing.Point(0, 0);
+            this.ViewGL.Name = "ViewGL";
+            this.ViewGL.Size = new System.Drawing.Size(512, 512);
+            this.ViewGL.TabIndex = 0;
+            this.ViewGL.VSync = false;
+            this.ViewGL.Load += new System.EventHandler(this.ViewGL_Load);
+            this.ViewGL.Paint += new System.Windows.Forms.PaintEventHandler(this.ViewGL_Paint);
+            this.ViewGL.Resize += new System.EventHandler(this.ViewGL_Resize);
+            // 
+            // NodeGraphPanel_Debug
+            // 
+            this.NodeGraphPanel_Debug.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.NodeGraphPanel_Debug.Location = new System.Drawing.Point(3, 3);
+            this.NodeGraphPanel_Debug.Name = "NodeGraphPanel_Debug";
+            this.NodeGraphPanel_Debug.Size = new System.Drawing.Size(200, 100);
+            this.NodeGraphPanel_Debug.TabIndex = 1;
+            this.NodeGraphPanel_Debug.Paint += new System.Windows.Forms.PaintEventHandler(this.NodeGraphPanel_Debug_Paint);
             // 
             // NodeGraphPanel
             // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(58)))), ((int)(((byte)(58)))));
+            this.Controls.Add(this.NodeGraphPanel_Debug);
+            this.Controls.Add(this.ViewGL);
             this.Name = "NodeGraphPanel";
             this.Size = new System.Drawing.Size(512, 512);
-            this.Paint += new System.Windows.Forms.PaintEventHandler(this.NodeGraphPanel_Paint);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NodeGraphPanel_KeyDown);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.NodeGraphPanel_KeyUp);
-            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.NodeGraphPanel_MouseDown);
-            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.NodeGraphPanel_MouseMove);
-            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.NodeGraphPanel_MouseUp);
-            this.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.NodeGraphPanel_MouseWheel);
-            this.Resize += new System.EventHandler(this.NodeGraphPanel_Resize);
             this.ResumeLayout(false);
 
         }
 
-
-
         #endregion
 
-        private System.Windows.Forms.Timer gl_timer;
+        private NodeGraphGL ViewGL;
+        private System.Windows.Forms.Panel NodeGraphPanel_Debug;
     }
 }

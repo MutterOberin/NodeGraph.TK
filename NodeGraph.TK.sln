@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NodeGraph.TK", "NodeGraph.TK\NodeGraph.TK.csproj", "{AD33EFC3-C5CD-4F6F-A958-22E23F1F0B8B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NodeGraph.TK.Example", "NodeGraph.TK.Example\NodeGraph.TK.Example.csproj", "{374AD9FB-703C-428C-A7BB-561D69E6E6C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NodeGraph.TK", "NodeGraph.TK\NodeGraph.TK.csproj", "{94B7CE75-E9BE-41FB-99AC-CA2D95E72E58}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AD33EFC3-C5CD-4F6F-A958-22E23F1F0B8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AD33EFC3-C5CD-4F6F-A958-22E23F1F0B8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AD33EFC3-C5CD-4F6F-A958-22E23F1F0B8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AD33EFC3-C5CD-4F6F-A958-22E23F1F0B8B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{374AD9FB-703C-428C-A7BB-561D69E6E6C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{374AD9FB-703C-428C-A7BB-561D69E6E6C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{374AD9FB-703C-428C-A7BB-561D69E6E6C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{374AD9FB-703C-428C-A7BB-561D69E6E6C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94B7CE75-E9BE-41FB-99AC-CA2D95E72E58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94B7CE75-E9BE-41FB-99AC-CA2D95E72E58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94B7CE75-E9BE-41FB-99AC-CA2D95E72E58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94B7CE75-E9BE-41FB-99AC-CA2D95E72E58}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

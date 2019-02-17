@@ -27,15 +27,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Text;
 using System.Windows.Forms;
 
 using OpenTK;
-using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
-
-using NodeGraph.TK;
 
 namespace NodeGraph.TK
 {
@@ -67,19 +62,6 @@ namespace NodeGraph.TK
     }
     #endregion
 
-    #region ENUM LinkVisualStyle
-    /// <summary>
-    /// Visual mode of viewing links
-    /// </summary>
-    public enum LinkVisualStyle
-    {
-        Direct,
-        Rectangle,
-        Curve,
-        Dummy
-    }
-    #endregion
-
     #region CLASS NodeGraphPanel
     /// <summary>
     /// 
@@ -99,111 +81,42 @@ namespace NodeGraph.TK
         #region - Private Variables -
 
         // General Behavior
-        private int scroll_last_X;
-        private int scroll_last_Y;
-        private Font font_debug;
-        private Vector2 select_BoxOrigin;
-        private Vector2 select_BoxCurrent;
-        private Vector2 mouse_position_ctrl;
-        private Vector2 mouse_position_view;
+        private Vector3 scroll_last;
+
         private int scroll_Margins;
         private int scroll_Margins_Value;
-        private Vector2 position_Last;
-        private int headerSize_Node;
-        private float linkHardness;
-        private bool drawDebug_Enabled;
 
-        // Colors
-        private Color m_NodeTextColor;
-        private Color m_NodeTextShadowColor;
-        private Color m_NodeFillColor;
-        private Color m_NodeFillSelectedColor;
-        private Color m_NodeOutlineColor;
-        private Color m_NodeOutlineSelectedColor;
-        private Color m_ConnectorTextColor;
-        private Color m_ConnectorFillColor;
-        private Color m_ConnectorOutlineColor;
-        private Color m_ConnectorSelectedFillColor;
-        private Color m_ConnectorOutlineSelectedColor;
-        private Color color_selection_fill;
-        private Color color_selection_outline;
-        private Color m_LinkColor;
-        private Color m_LinkEditableColor;
-        private Color m_NodeSignalValidColor;
-        private Color m_NodeSignalInvalidColor;
+        private Vector3 select_BoxOrigin;
+        private Vector3 select_BoxCurrent;
 
-        // Fonts
-        private Font m_NodeTitleFont;
-        private Font m_NodeConnectorFont;
+        private Vector3 mouse_position_ctrl;
+        private Vector3 mouse_position_view;
 
-        private Font m_NodeScaledTitleFont;
-        private Font m_NodeScaledConnectorFont;
+        private Vector3 mouse_position_last;
 
-
-        // Brushes and Pens
-        private SolidBrush m_NodeText;
-        private SolidBrush m_NodeTextShadow;
-
-        // Nodes
-        private Pen m_NodeOutline;
-        private Pen m_NodeOutlineSelected;
-        private SolidBrush m_NodeFill;
-        private SolidBrush m_NodeFillSelected;
-        private SolidBrush m_NodeSignalValid;
-        private SolidBrush m_NodeSignalInvalid;
-        private bool m_bDrawShadow;
-
-
-        // Connectors
-        private SolidBrush m_ConnectorText;
-        private Pen m_ConnectorOutline;
-        private SolidBrush m_ConnectorFill;
-        private Pen m_ConnectorOutlineSelected;
-        private SolidBrush m_ConnectorFillSelected;
-        private int m_ConnectorHitZoneBleed;
-
-        // Text Draw tresholds
-        private float m_fNodeConnectorTextZoomTreshold;
-        private float m_fNodeTitleZoomThreshold;
-        // Selection Box
-        private Pen m_SelectionOutline;
-        private SolidBrush m_SelectionFill;
-
-        // Links
-        private Pen m_Link;
-        private Pen m_LinkEditable;
-        private Brush m_LinkArrow;
-
-        // Node HeaderGradient
-        private SolidBrush m_NodeHeaderFill;
-        private Color m_NodeHeaderColor;
+        private bool enable_debug;
+        private bool enable_shadow;
+        private bool enable_smooth;
 
         // For Linking
-        private NodeGraphConnector m_InputLink;
-        private NodeGraphConnector m_OutputLink;
-        private bool m_bAltPressed;
-        private bool m_bCtrlPressed;
-        private LinkVisualStyle m_LinkVisualStyle;
+        private NodeGraphConnector link_input;
+        private NodeGraphConnector link_output;
 
-        // Grid support
-        private bool grid_enable;
-        private float grid_padding;
-        private float grid_alpha;
-        private Vector4 grid_color;
-
-        public Rectangle ViewSpaceRectangle;
-
-        private int gl_tick;
-        private bool gl_loaded;
-        private float gl_aspect;
-
-        // Smooth Behavior
-        private bool m_bSmoothBehavior;
+        private bool key_down_alt;
+        private bool key_down_ctrl;
 
         private NodeGraphEditMode m_eEditMode;
 
         private NodeGraphView view;
         private NodeGraphGraph graph;
+
+        #region - - OpenGL - -
+
+        private int gl_tick;
+        private bool gl_loaded;
+        private float gl_aspect;
+
+        #endregion
 
         #endregion
 
@@ -216,462 +129,40 @@ namespace NodeGraph.TK
         {
             InitializeComponent();
 
-            this.graph = new NodeGraphGraph();
-            this.view = new NodeGraphView(this, this.graph);
-            this.font_debug = new Font("Tahoma", 8.0f);
-            this.scroll_Margins = 32;
-            this.scroll_Margins_Value = 10;
-            this.m_eEditMode = NodeGraphEditMode.Idle;
-            this.mouse_position_view = Vector2.Zero;
-            this.m_bAltPressed = false;
-            this.m_bCtrlPressed = false;
-            this.m_NodeText = new SolidBrush(Color.White);
-            this.m_NodeTextShadow = new SolidBrush(Color.Black);
-            this.NodeTitleZoomThreshold = 0.5f;
-            this.NodeConnectorTextZoomTreshold = 0.8f;
-            this.NodeHeaderSize = 24;
-            this.NodeTextColor = Color.FromArgb(255, 255, 255, 255);
-            this.NodeTextShadowColor = Color.FromArgb(128, 0, 0, 0);
-            this.NodeFillColor = Color.FromArgb(255, 128, 128, 128);
-            this.NodeFillSelectedColor = Color.FromArgb(255, 160, 128, 100);
-            this.NodeOutlineColor = Color.FromArgb(255, 180, 180, 180);
-            this.NodeOutlineSelectedColor = Color.FromArgb(255, 192, 160, 128);
-            this.ConnectorTextColor = Color.FromArgb(255, 64, 64, 64);
-            this.ConnectorFillColor = Color.FromArgb(255, 0, 0, 0);
-            this.ConnectorFillSelectedColor = Color.FromArgb(255, 32, 32, 32);
-            this.ConnectorOutlineColor = Color.FromArgb(255, 32, 32, 32);
-            this.ConnectorOutlineSelectedColor = Color.FromArgb(255, 64, 64, 64);
-            this.SelectionFillColor = Color.FromArgb(64, 128, 90, 30);
-            this.SelectionOutlineColor = Color.FromArgb(192, 255, 180, 60);
-            this.NodeHeaderColor = Color.FromArgb(128, 0, 0, 0);
-            this.LinkColor = Color.FromArgb(255, 180, 180, 180);
-            this.LinkEditableColor = Color.FromArgb(255, 64, 255, 0);
-            this.NodeSignalValidColor = Color.FromArgb(255, 0, 255, 0);
-            this.NodeSignalInvalidColor = Color.FromArgb(255, 255, 0, 0);
-            this.m_NodeTitleFont = new Font("Tahoma", 8.0f);
-            this.m_NodeConnectorFont = new Font("Tahoma", 7.0f);
-            this.m_NodeScaledTitleFont = new Font(m_NodeTitleFont.Name, m_NodeTitleFont.Size);
-            this.m_NodeScaledConnectorFont = new Font(m_NodeConnectorFont.Name, m_NodeConnectorFont.Size);
-            this.m_LinkVisualStyle = LinkVisualStyle.Curve;
-            this.ConnectorHitZoneBleed = 2;
-            this.select_BoxOrigin = Vector2.Zero;
-            this.select_BoxCurrent = Vector2.Zero;
-            this.LinkHardness = 2.0f;
-            this.scroll_last_X = 0;
-            this.scroll_last_Y = 0;
-            this.EnableDrawDebug = true;
+            this.graph = new NodeGraphGraph("Test");
+            this.view  = new NodeGraphView(this, graph);
+
             this.Dock = DockStyle.Fill;
             this.DoubleBuffered = true;
-            this.m_InputLink = null;
-            this.m_OutputLink = null;
 
-            // Grid
-            this.grid_enable = true;
-            this.grid_padding = 64;
-            this.grid_alpha = 0.125f;
+            this.scroll_Margins = 32;
+            this.scroll_Margins_Value = 10;
 
-            if ((this.BackColor.R + this.BackColor.G + this.BackColor.B) / 3.0f < 128)
-                this.grid_color = new Vector4(1.0f, 1.0f, 1.0f, this.grid_alpha);
-            else
-                this.grid_color = new Vector4(0.0f, 0.0f, 0.0f, this.grid_alpha);
+            this.m_eEditMode = NodeGraphEditMode.Idle;
 
-            this.m_bDrawShadow = true;
-            this.m_bSmoothBehavior = false;
+            this.mouse_position_view = Vector3.Zero;
+            this.mouse_position_ctrl = Vector3.Zero;
+
+            this.key_down_alt = false;
+            this.key_down_ctrl = false;
+
+            this.scroll_last = Vector3.Zero;
+
+            this.select_BoxOrigin = Vector3.Zero;
+            this.select_BoxCurrent = Vector3.Zero;
+
+            this.link_input = null;
+            this.link_output = null;
+
+            this.enable_debug = true;
+            this.enable_shadow = true;
+            this.enable_smooth = false;
         }
 
         #endregion
 
         #region - Properties -
 
-        #region - - Fonts / Brushes - -
-
-        // Brushes
-        [Browsable(false)]
-        public SolidBrush NodeText { get { return this.m_NodeText; } }
-        [Browsable(false)]
-        public SolidBrush NodeTextShadow { get { return this.m_NodeTextShadow; } }
-        [Browsable(false)]
-        public SolidBrush NodeHeaderFill { get { return this.m_NodeHeaderFill; } }
-        [Browsable(false)]
-        public Pen NodeOutline { get { return this.m_NodeOutline; } }
-        [Browsable(false)]
-        public Pen NodeOutlineSelected { get { return this.m_NodeOutlineSelected; } }
-        [Browsable(false)]
-        public SolidBrush NodeFill { get { return this.m_NodeFill; } }
-        [Browsable(false)]
-        public SolidBrush NodeFillSelected { get { return this.m_NodeFillSelected; } }
-        [Browsable(false)]
-        public SolidBrush NodeSignalValid { get { return this.m_NodeSignalValid; } }
-        [Browsable(false)]
-        public SolidBrush NodeSignalInvalid { get { return this.m_NodeSignalInvalid; } }
-        [Browsable(false)]
-        public SolidBrush ConnectorText { get { return this.m_ConnectorText; } }
-        [Browsable(false)]
-        public Pen ConnectorOutline { get { return this.m_ConnectorOutline; } }
-        [Browsable(false)]
-        public SolidBrush ConnectorFill { get { return this.m_ConnectorFill; } }
-        [Browsable(false)]
-        public Pen ConnectorOutlineSelected { get { return this.m_ConnectorOutlineSelected; } }
-        [Browsable(false)]
-        public SolidBrush ConnectorFillSelected { get { return this.m_ConnectorFillSelected; } }
-
-        // Fonts
-        [Category("NodeGraph Panel Fonts")]
-        public Font NodeTitleFont { get { return this.m_NodeTitleFont; } set { this.m_NodeTitleFont = value; } }
-        [Category("NodeGraph Panel Fonts")]
-        public Font NodeConnectorFont { get { return this.m_NodeConnectorFont; } set { this.m_NodeConnectorFont = value; } }
-        [Browsable(false)]
-        public Font NodeScaledTitleFont { get { return this.m_NodeScaledTitleFont; } set { this.m_NodeScaledTitleFont = value; } }
-        [Browsable(false)]
-        public Font NodeScaledConnectorFont { get { return this.m_NodeScaledConnectorFont; } set { this.m_NodeScaledConnectorFont = value; } }
-
-        #endregion
-
-        # region - - Colors - -
-
-        [Category("NodeGraph Panel Colors")]
-        public Color NodeTextColor
-        {
-            get
-            {
-                return this.m_NodeTextColor;
-            }
-            set
-            {
-                this.m_NodeText = new SolidBrush(value);
-                this.m_NodeTextColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color NodeTextShadowColor
-        {
-            get
-            {
-                return this.m_NodeTextShadowColor;
-            }
-            set
-            {
-                this.m_NodeTextShadow = new SolidBrush(value);
-                this.m_NodeTextShadowColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color NodeFillColor
-        {
-            get
-            {
-                return this.m_NodeFillColor;
-            }
-            set
-            {
-                this.m_NodeFill = new SolidBrush(value);
-                this.m_NodeFillColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color NodeFillSelectedColor
-        {
-            get
-            {
-                return this.m_NodeFillSelectedColor;
-            }
-            set
-            {
-                this.m_NodeFillSelected = new SolidBrush(value);
-                this.m_NodeFillSelectedColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color NodeOutlineColor
-        {
-            get
-            {
-                return this.m_NodeOutlineColor;
-            }
-            set
-            {
-                this.m_NodeOutline = new Pen(value);
-                this.m_NodeOutlineColor = value;
-            }
-        }
-        [Category("NodeGraph Panel Colors")]
-        public Color NodeOutlineSelectedColor
-        {
-            get { return this.m_NodeOutlineSelectedColor; }
-            set
-            {
-                this.m_NodeOutlineSelected = new Pen(value);
-                this.m_NodeOutlineSelectedColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color NodeSignalValidColor
-        {
-            get
-            {
-                return this.m_NodeSignalValidColor;
-            }
-            set
-            {
-                this.m_NodeSignalValid = new SolidBrush(value);
-                this.m_NodeSignalValidColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color NodeSignalInvalidColor
-        {
-            get
-            {
-                return this.m_NodeSignalInvalidColor;
-            }
-            set
-            {
-                this.m_NodeSignalInvalid = new SolidBrush(value);
-                this.m_NodeSignalInvalidColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color ConnectorTextColor
-        {
-            get
-            {
-                return this.m_ConnectorTextColor;
-            }
-            set
-            {
-                this.m_ConnectorText = new SolidBrush(value);
-                this.m_ConnectorTextColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color ConnectorFillColor
-        {
-            get
-            {
-                return this.m_ConnectorFillColor;
-            }
-            set
-            {
-                this.m_ConnectorFill = new SolidBrush(value);
-                this.m_ConnectorFillColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color ConnectorOutlineColor
-        {
-            get
-            {
-                return this.m_ConnectorOutlineColor;
-            }
-            set
-            {
-                this.m_ConnectorOutline = new Pen(value);
-                this.m_ConnectorOutlineColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color ConnectorFillSelectedColor
-        {
-            get
-            {
-                return this.m_ConnectorSelectedFillColor;
-            }
-            set
-            {
-                this.m_ConnectorFillSelected = new SolidBrush(value);
-                this.m_ConnectorSelectedFillColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color ConnectorOutlineSelectedColor
-        {
-            get
-            {
-                return this.m_ConnectorOutlineSelectedColor;
-            }
-            set
-            {
-                this.m_ConnectorOutlineSelected = new Pen(value);
-                this.m_ConnectorOutlineSelectedColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color SelectionFillColor
-        {
-            get
-            {
-                return this.color_selection_fill;
-            }
-            set
-            {
-                this.m_SelectionFill = new SolidBrush(value);
-                this.color_selection_fill = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color SelectionOutlineColor
-        {
-            get
-            {
-                return this.color_selection_outline;
-            }
-            set
-            {
-                this.m_SelectionOutline = new Pen(value);
-                this.color_selection_outline = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color NodeHeaderColor
-        {
-            get { return this.m_NodeHeaderColor; }
-            set
-            {
-                this.m_NodeHeaderFill = new SolidBrush(value);
-                this.m_NodeHeaderColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color LinkColor
-        {
-            get
-            {
-                return this.m_LinkColor;
-            }
-            set
-            {
-                this.m_Link = new Pen(value, 0.5f);
-                this.m_LinkArrow = new SolidBrush(value);
-                this.m_LinkColor = value;
-            }
-        }
-
-        [Category("NodeGraph Panel Colors")]
-        public Color LinkEditableColor
-        {
-            get
-            {
-                return this.m_LinkEditableColor;
-            }
-            set
-            {
-                this.m_LinkEditable = new Pen(value, 0.5f);
-                this.m_LinkEditableColor = value;
-            }
-        }
-
-        #endregion
-
-        #region - - Panel - -
-
-        [Category("NodeGraph Panel")]
-        public float NodeTitleZoomThreshold
-        {
-            get { return this.m_fNodeTitleZoomThreshold; }
-            set { this.m_fNodeTitleZoomThreshold = value; }
-        }
-
-        [Category("NodeGraph Panel")]
-        public float NodeConnectorTextZoomTreshold
-        {
-            get { return this.m_fNodeConnectorTextZoomTreshold; }
-            set { this.m_fNodeConnectorTextZoomTreshold = value; }
-        }
-
-        [Category("NodeGraph Panel")]
-        public bool EnableDrawDebug
-        {
-            get { return this.drawDebug_Enabled; }
-            set { this.drawDebug_Enabled = value; }
-        }
-
-        [Category("NodeGraph Panel")]
-        public int NodeHeaderSize
-        {
-            get { return this.headerSize_Node; }
-            set { this.headerSize_Node = value; }
-        }
-
-        [Category("NodeGraph Panel")]
-        public LinkVisualStyle LinkVisualStyle
-        {
-            get { return this.m_LinkVisualStyle; }
-            set { this.m_LinkVisualStyle = value; Refresh(); }
-        }
-
-        [Category("NodeGraph Panel")]
-        public int ConnectorHitZoneBleed
-        {
-            get { return this.m_ConnectorHitZoneBleed; }
-            set { this.m_ConnectorHitZoneBleed = value; }
-        }
-
-        [Category("NodeGraph Panel")]
-        public float LinkHardness
-        {
-            get
-            {
-                return this.linkHardness;
-            }
-            set
-            {
-                if (value < 1.0) this.linkHardness = 1.0f;
-                else this.linkHardness = value;
-            }
-        }
-
-        [Category("NodeGraph Panel")]
-        public float GridPadding
-        {
-            get { return this.grid_padding; }
-            set { this.grid_padding = value; }
-        }
-
-        [Category("NodeGraph Panel")]
-        public bool ShowGrid
-        {
-            get { return this.grid_enable; }
-            set { this.grid_enable = value; }
-        }
-
-        [Category("NodeGraph Panel")]
-        public float GridAlpha
-        {
-            get { return this.grid_alpha; }
-            set { this.grid_alpha = value; }
-        }
-
-        [Category("NodeGraph Panel")]
-        public bool DrawShadow
-        {
-            get { return m_bDrawShadow; }
-            set { m_bDrawShadow = value; }
-        }
-
-        [Category("NodeGraph Panel")]
-        public bool SmoothBehavior
-        {
-            get { return m_bSmoothBehavior; }
-            set { m_bSmoothBehavior = value; }
-        }
-
-        #endregion
-        
         public NodeGraphView View
         {
             get { return this.view; }
@@ -682,6 +173,27 @@ namespace NodeGraph.TK
         {
             get { return this.graph; }
             set { this.graph = value; }
+        }
+
+        [Category("NodeGraph Panel")]
+        public bool EnableDrawDebug
+        {
+            get { return this.enable_debug; }
+            set { this.enable_debug = value; }
+        }
+
+        [Category("NodeGraph Panel")]
+        public bool EnableShadow
+        {
+            get { return this.enable_shadow; }
+            set { this.enable_shadow = value; }
+        }
+
+        [Category("NodeGraph Panel")]
+        public bool EnableSmooth
+        {
+            get { return this.enable_smooth; }
+            set { this.enable_smooth = value; }
         }
 
         #endregion
@@ -726,72 +238,6 @@ namespace NodeGraph.TK
             this.graph.Links.Add(link);
 
             this.LinkCreated?.Invoke(null, new NodeGraphPanelLinkEventArgs(link));
-        }
-
-        /// <summary>
-        /// Draws the selection rectangle
-        /// </summary>
-        /// <param name="e"></param>
-        private void GL_Draw_SelectionBox()
-        {
-            if (this.m_eEditMode == NodeGraphEditMode.SelectingBox)
-            {
-                RectangleF r = new RectangleF();
-
-                Vector2 v0 = Vector2.Zero;
-                Vector2 v1 = Vector2.Zero;
-
-                if (this.select_BoxOrigin.X > this.select_BoxCurrent.X)
-                {
-                    r.X = this.select_BoxCurrent.X;
-                    r.Width = this.select_BoxOrigin.X - this.select_BoxCurrent.X;
-                }
-                else
-                {
-                    r.X = this.select_BoxOrigin.X;
-                    r.Width = this.select_BoxCurrent.X - this.select_BoxOrigin.X;
-                }
-                if (this.select_BoxOrigin.Y > this.select_BoxCurrent.Y)
-                {
-                    r.Y = this.select_BoxCurrent.Y;
-                    r.Height = this.select_BoxOrigin.Y - this.select_BoxCurrent.Y;
-                }
-                else
-                {
-                    r.Y = this.select_BoxOrigin.Y;
-                    r.Height = this.select_BoxCurrent.Y - this.select_BoxOrigin.Y;
-                }
-
-
-                //e.Graphics.FillRectangle(this.m_SelectionFill, this.ViewToControl(r));
-                //e.Graphics.DrawRectangle(this.m_SelectionOutline, this.ViewToControl(r));
-
-                r = this.ViewToControl(r);
-
-                GL.Color3(this.color_selection_fill);
-
-                GL.Begin(PrimitiveType.Quads);
-
-                GL.Vertex3(r.X, r.Y, 0);
-                GL.Vertex3(r.X + r.Width, r.Y, 0);
-                GL.Vertex3(r.X + r.Width, r.Y + r.Height, 0);
-                GL.Vertex3(r.X, r.Y + r.Height, 0);
-
-                GL.End();
-
-                GL.Color3(this.color_selection_outline);
-
-                GL.Begin(PrimitiveType.LineLoop);
-
-                GL.Vertex3(r.X, r.Y, 0);
-                GL.Vertex3(r.X + r.Width, r.Y, 0);
-                GL.Vertex3(r.X + r.Width, r.Y + r.Height, 0);
-                GL.Vertex3(r.X, r.Y + r.Height, 0);
-
-                GL.End();
-
-
-            }
         }
 
         /// <summary>
@@ -930,126 +376,30 @@ namespace NodeGraph.TK
         /// <param name="e"></param>
         private void NodeGraphPanel_Paint(object sender, PaintEventArgs e)
         {
-            //if (this.DrawBackground != null) DrawBackground(this, e);
-
-            //// Smooth Behavior
-            //if (this.m_bSmoothBehavior)
-            //{
-            //    this.View.ViewZoomCurrent += (this.View.ViewZoom - this.View.ViewZoomCurrent) * 0.08f;
-            //    if (Math.Abs(this.View.ViewZoomCurrent - this.View.ViewZoom) < 0.005)
-            //    {
-            //        this.View.ViewZoomCurrent = this.View.ViewZoom;
-            //        UpdateFontSize();
-            //    }
-            //    else
-            //    {
-            //        UpdateFontSize();
-            //        this.Invalidate();
-            //    }
-            //}
-            //else
-            //{
-
-            //}
-
-
-            //e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-            //e.Graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
-
-
-            //foreach (NodeGraphNode i_Node in this.graph.Nodes)
-            //{
-            //    i_Node.Draw(e);
-            //}
-
-            //e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            //DrawLinkEditable(e);
-            //DrawAllLinks(e);
-            //e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-
-            //// Select Box
-            //DrawSelectionBox(e);
-
-            this.DrawDebug(e);
-
             if (this.EnableDrawDebug)
-                this.DrawDebug(e);
-        }
-
-        private void GL_Draw_Grid()
-        {
-            Vector2 v0 = new Vector2(-4096, -4096);
-            Vector2 v1 = new Vector2(+4096, +4096);
-
-            GL.Color4(this.grid_color);
-
-            GL.Begin(PrimitiveType.Lines);
-
-            for (float i = v0.X; i < v1.X; i += grid_padding)
             {
-                GL.Vertex3(i, v0.Y, 0);
-                GL.Vertex3(i, v1.Y, 0);
-
+                this.NodeGraphPanel_Debug.Refresh();
             }
-            for (float i = v0.Y; i < v1.Y; i += grid_padding)
-            {
-                GL.Vertex3(v0.X, i, 0);
-                GL.Vertex3(v1.X, i, 0);
-            }
-
-            GL.End();
         }
 
-        private void GL_Draw_Debug_RefreshTick()
+        private void NodeGraphPanel_Debug_Paint(object sender, PaintEventArgs e)
         {
-            GL.Color3(Color.Aquamarine);
+            e.Graphics.DrawString("Edit Mode:" + m_eEditMode.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 0.0f));
+            e.Graphics.DrawString("ViewX: " + this.view.ViewX.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 10.0f));
+            e.Graphics.DrawString("ViewY: " + this.view.ViewY.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 20.0f));
+            e.Graphics.DrawString("ViewZoom: " + this.view.ViewZoom.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 30.0f));
 
-            GL.Begin(PrimitiveType.LineLoop);
+            e.Graphics.DrawString("ViewSpace Cursor Location:" + this.mouse_position_view.X.ToString() + " : " + this.mouse_position_view.Y.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 50.0f));
 
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(10, 0, 0);
-            GL.Vertex3(10, 4, 0);
-            GL.Vertex3(0, 4, 0);
+            e.Graphics.DrawString("AltPressed: " + this.key_down_alt.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 70.0f));
 
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(0 + gl_tick, 0, 0);
-            GL.Vertex3(0 + gl_tick, 4, 0);
-            GL.Vertex3(0, 4, 0);
-
-            GL.End();
-
-
-            this.gl_tick++;
-            this.gl_tick = this.gl_tick % 10;
-        }
-
-        /// <summary>
-        /// Draws debug information
-        /// </summary>
-        /// <param name="e"></param>
-        private void DrawDebug(PaintEventArgs e)
-        {
-            //e.Graphics.DrawString("Edit Mode:" + m_eEditMode.ToString(), this.m_oDebugFont, this.m_NodeText, new PointF(0.0f, 0.0f));
-            //e.Graphics.DrawString("ViewX: " + this.View.ViewX.ToString(), this.m_oDebugFont, this.m_NodeText, new PointF(0.0f, 10.0f));
-            //e.Graphics.DrawString("ViewY: " + this.View.ViewY.ToString(), this.m_oDebugFont, this.m_NodeText, new PointF(0.0f, 20.0f));
-            //e.Graphics.DrawString("ViewZoom: " + this.View.ViewZoom.ToString(), this.m_oDebugFont, this.m_NodeText, new PointF(0.0f, 30.0f));
-
-            //e.Graphics.DrawString("ViewSpace Cursor Location:" + this.m_ViewSpaceCursorLocation.X.ToString() + " : " + this.m_ViewSpaceCursorLocation.Y.ToString(), this.m_oDebugFont, this.m_NodeText, new PointF(0.0f, 50.0f));
-
-            //e.Graphics.DrawString("AltPressed: " + this.m_bAltPressed.ToString(), this.m_oDebugFont, this.m_NodeText, new PointF(0.0f, 70.0f));
-
-            //// BELOW: DEBUG ELEMENTS
+            // BELOW: DEBUG ELEMENTS
 
             //Pen originPen = new Pen(Color.Lime);
             //e.Graphics.DrawLine(originPen, this.ViewToControl(new Point(-100, 0)), this.ViewToControl(new Point(100, 0)));
             //e.Graphics.DrawLine(originPen, this.ViewToControl(new Point(0, -100)), this.ViewToControl(new Point(0, 100)));
 
             //e.Graphics.DrawBezier(originPen, this.ViewToControl(this.m_SelectBoxOrigin), this.ViewToControl(this.m_SelectBoxOrigin), this.ViewToControl(this.m_SelectBoxCurrent), this.ViewToControl(this.m_SelectBoxCurrent));
-
         }
 
         /// <summary>
@@ -1059,7 +409,7 @@ namespace NodeGraph.TK
         /// <param name="e"></param>
         private void NodeGraphPanel_MouseDown(object sender, MouseEventArgs e)
         {
-            Vector2 location = new Vector2(e.Location.X, e.Location.Y);
+            Vector3 location = new Vector3(e.Location.X, e.Location.Y, 0);
 
             switch (this.m_eEditMode)
             {
@@ -1069,24 +419,23 @@ namespace NodeGraph.TK
                         case MouseButtons.Middle:
 
                             this.m_eEditMode = NodeGraphEditMode.Scrolling;
-                            this.scroll_last_X = e.Location.X;
-                            this.scroll_last_Y = e.Location.Y;
+                            this.mouse_position_last = location;
 
                             break;
                         case MouseButtons.Left:
 
-                            if (this.HitAll(e.Location) == HitType.Connector)
+                            if (this.HitAll(location) == HitType.Connector)
                             {
                                 //if (ModifierKeys == Keys.Alt)
-                                if (!m_bAltPressed)
+                                if (!key_down_alt)
                                 {
                                     this.m_eEditMode = NodeGraphEditMode.Linking;
-                                    this.m_InputLink = GetHitConnector(e.Location);
-                                    this.m_OutputLink = null;
+                                    this.link_input = GetHitConnector(location);
+                                    this.link_output = null;
                                 }
                                 else
                                 {
-                                    NodeGraphConnector v_Connector = GetHitConnector(e.Location);
+                                    NodeGraphConnector v_Connector = GetHitConnector(location);
                                     this.Delete_LinkConnectors(v_Connector);
                                 }
 
@@ -1095,10 +444,10 @@ namespace NodeGraph.TK
                             else if (this.graph.NodesSelected.Count >= 1 && this.HitSelected(location) == HitType.Node)
                             {
                                 this.m_eEditMode = NodeGraphEditMode.MovingSelection;
-                                this.position_Last = this.ControlToView(location);
+                                this.mouse_position_last = this.ControlToView(location);
                             }
                             // Selection is not present => Select and Move
-                            else if (this.graph.NodesSelected.Count == 0 && this.HitAll(e.Location) == HitType.Node)
+                            else if (this.graph.NodesSelected.Count == 0 && this.HitAll(location) == HitType.Node)
                             {
                                 this.select_BoxCurrent = this.ControlToView(location);
                                 this.select_BoxOrigin = this.ControlToView(location);
@@ -1107,7 +456,7 @@ namespace NodeGraph.TK
                                 this.UpdateSelection();
 
                                 this.m_eEditMode = NodeGraphEditMode.MovingSelection;
-                                this.position_Last = this.ControlToView(location);
+                                this.mouse_position_last = this.ControlToView(location);
                             }
                             else
                             {
@@ -1148,16 +497,16 @@ namespace NodeGraph.TK
 
             if (e.Delta != 0)
             {
-                newViewZoom = this.View.ViewZoom + ((float)e.Delta * 0.001f);
+                newViewZoom = this.view.ViewZoom + ((float)e.Delta * 0.001f);
 
                 if (newViewZoom > 0.1f && newViewZoom < 2.0f)
-                    this.View.ViewZoom = newViewZoom;
+                    this.view.ViewZoom = newViewZoom;
 
             }
 
             if (this.m_eEditMode == NodeGraphEditMode.SelectingBox)
             {
-                this.select_BoxCurrent = this.ControlToView(new Vector2(e.Location.X, e.Location.Y));
+                this.select_BoxCurrent = this.ControlToView(new Vector3(e.Location.X, e.Location.Y, 0));
             }
 
             //UpdateFontSize();
@@ -1172,6 +521,8 @@ namespace NodeGraph.TK
         /// <param name="e"></param>
         private void NodeGraphPanel_MouseUp(object sender, MouseEventArgs e)
         {
+            Vector3 location = new Vector3(e.Location.X, e.Location.Y, 0);
+
             switch (this.m_eEditMode)
             {
                 case NodeGraphEditMode.Scrolling:
@@ -1203,7 +554,7 @@ namespace NodeGraph.TK
 
                 case NodeGraphEditMode.Linking:
 
-                    this.m_OutputLink = GetHitConnector(e.Location);
+                    this.link_output = GetHitConnector(location);
 
                     this.ValidateLink();
 
@@ -1224,18 +575,18 @@ namespace NodeGraph.TK
         /// <param name="e"></param>
         private void NodeGraphPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            this.mouse_position_ctrl = new Vector2(e.Location.X, e.Location.Y);
+            this.mouse_position_ctrl = new Vector3(e.Location.X, e.Location.Y, 0);
             this.mouse_position_view = this.ControlToView(mouse_position_ctrl);
 
             switch (this.m_eEditMode)
             {
                 case NodeGraphEditMode.Scrolling:
 
-                    this.View.ViewX -= (int)((e.Location.X - scroll_last_X) * this.View.ViewZoom);
-                    this.View.ViewY += (int)((e.Location.Y - scroll_last_Y) * this.View.ViewZoom);
+                    this.view.ViewX -= (int)((e.Location.X - scroll_last.X) * this.view.ViewZoom);
+                    this.view.ViewY += (int)((e.Location.Y - scroll_last.Y) * this.view.ViewZoom);
 
-                    this.scroll_last_X = e.Location.X;
-                    this.scroll_last_Y = e.Location.Y;
+                    this.scroll_last.X = e.Location.X;
+                    this.scroll_last.Y = e.Location.Y;
 
                     this.Refresh();
 
@@ -1244,7 +595,7 @@ namespace NodeGraph.TK
                 case NodeGraphEditMode.Selecting:
 
                     this.m_eEditMode = NodeGraphEditMode.SelectingBox;
-                    this.select_BoxCurrent = this.ControlToView(new Vector2(e.Location.X, e.Location.Y));
+                    this.select_BoxCurrent = mouse_position_view;
                     this.UpdateHighlights();
                     this.Refresh();
 
@@ -1257,7 +608,7 @@ namespace NodeGraph.TK
                         this.UpdateScroll(new Vector2(e.Location.X, e.Location.Y));
                     }
 
-                    this.select_BoxCurrent = this.ControlToView(new Vector2(e.Location.X, e.Location.Y));
+                    this.select_BoxCurrent = mouse_position_view;
                     this.UpdateHighlights();
                     this.Refresh();
 
@@ -1270,14 +621,13 @@ namespace NodeGraph.TK
                         this.UpdateScroll(new Vector2(e.Location.X, e.Location.Y));
                     }
 
-                    Vector2 delta = this.position_Last - this.ControlToView(new Vector2(e.Location.X, e.Location.Y));
+                    Vector3 delta = this.mouse_position_last - mouse_position_view;
 
-                    this.MoveSelection(new Point((int)delta.X, (int)delta.Y));
+                    this.MoveSelection(delta);
 
                     this.Refresh();
 
-                    this.position_Last.X = e.Location.X;
-                    this.position_Last.Y = e.Location.Y;
+                    this.mouse_position_last = mouse_position_view;
 
                     break;
 
@@ -1299,16 +649,6 @@ namespace NodeGraph.TK
         }
 
         /// <summary>
-        /// Behavior when panel is resized
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void NodeGraphPanel_Resize(object sender, EventArgs e)
-        {
-
-        }
-
-        /// <summary>
         /// Behavior when keyboard key is pushed
         /// </summary>
         /// <param name="sender"></param>
@@ -1316,10 +656,10 @@ namespace NodeGraph.TK
         private void NodeGraphPanel_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Alt)
-                m_bAltPressed = true;
+                key_down_alt = true;
 
             if (e.Control)
-                m_bCtrlPressed = true;
+                key_down_ctrl = true;
 
             if (e.KeyCode == Keys.Delete)
                 Delete_SelectedNodes();
@@ -1333,10 +673,10 @@ namespace NodeGraph.TK
         private void NodeGraphPanel_KeyUp(object sender, KeyEventArgs e)
         {
             if (!e.Alt)
-                m_bAltPressed = false;
+                key_down_alt = false;
 
             if (!e.Control)
-                m_bCtrlPressed = false;
+                key_down_ctrl = false;
         }
 
         /*
@@ -1348,10 +688,10 @@ namespace NodeGraph.TK
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public Vector2 ControlToView(Vector2 point)
+        public Vector3 ControlToView(Vector3 point)
         {
-            return new Vector2((int)((point.X - (this.Width / 2)) * this.View.ViewZoom) + this.View.ViewX,
-                               (int)((point.Y - (this.Height / 2)) * this.View.ViewZoom) - this.View.ViewY);
+            return new Vector3((int)((point.X - (this.Width / 2)) * this.view.ViewZoom) + this.view.ViewX,
+                               (int)((point.Y - (this.Height / 2)) * this.view.ViewZoom) - this.view.ViewY, 0);
         }
 
         /// <summary>
@@ -1359,40 +699,10 @@ namespace NodeGraph.TK
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        public Vector2 ViewToControl(Vector2 point)
+        public Vector3 ViewToControl(Vector3 point)
         {
-            return new Vector2((int)((point.X + this.View.ViewX) / this.View.ViewZoom) + (this.Width / 2),
-                               (int)((point.Y + this.View.ViewY) / this.View.ViewZoom) - (this.Height / 2));
-        }
-
-        /// <summary>
-        /// Converts Control Space to View Space (Rectangle)
-        /// </summary>
-        /// <param name="p_Rectangle"></param>
-        /// <returns></returns>
-        public RectangleF ControlToView(RectangleF p_Rectangle)
-        {
-            Vector2 pos = this.ControlToView(new Vector2(p_Rectangle.X, p_Rectangle.Y));
-
-            float w = (int)(p_Rectangle.Width / this.View.ViewZoomCurrent);
-            float h = (int)(p_Rectangle.Height / this.View.ViewZoomCurrent);
-
-            return new RectangleF(pos.X, pos.Y, w, h);
-        }
-
-        /// <summary>
-        /// Converts View Space to Control Space (Rectangle)
-        /// </summary>
-        /// <param name="p_Rectangle"></param>
-        /// <returns></returns>
-        public RectangleF ViewToControl(RectangleF p_Rectangle)
-        {
-            Vector2 pos = this.ControlToView(new Vector2(p_Rectangle.X, p_Rectangle.Y));
-
-            float w = (int)(p_Rectangle.Width * this.View.ViewZoomCurrent);
-            float h = (int)(p_Rectangle.Height * this.View.ViewZoomCurrent);
-
-            return new RectangleF(pos.X, pos.Y, w, h);
+            return new Vector3((int)((point.X + this.view.ViewX) / this.view.ViewZoom) + (this.Width / 2),
+                               (int)((point.Y + this.view.ViewY) / this.view.ViewZoom) - (this.Height / 2), 0);
         }
 
         /// <summary>
@@ -1419,19 +729,19 @@ namespace NodeGraph.TK
         {
             if (cursorLocation.X < this.scroll_Margins)
             {
-                this.View.ViewX += (int)(this.scroll_Margins_Value / this.View.ViewZoomCurrent);
+                this.view.ViewX += (int)(this.scroll_Margins_Value / this.view.ViewZoomCurrent);
             }
             else if (cursorLocation.X > this.Width - this.scroll_Margins)
             {
-                this.View.ViewX -= (int)(this.scroll_Margins_Value / this.View.ViewZoomCurrent);
+                this.view.ViewX -= (int)(this.scroll_Margins_Value / this.view.ViewZoomCurrent);
             }
             else if (cursorLocation.Y < this.scroll_Margins)
             {
-                this.View.ViewY += (int)(this.scroll_Margins_Value / this.View.ViewZoomCurrent);
+                this.view.ViewY += (int)(this.scroll_Margins_Value / this.view.ViewZoomCurrent);
             }
             else if (cursorLocation.Y > this.Height - this.scroll_Margins)
             {
-                this.View.ViewY -= (int)(this.scroll_Margins_Value / this.View.ViewZoomCurrent);
+                this.view.ViewY -= (int)(this.scroll_Margins_Value / this.view.ViewZoomCurrent);
             }
         }
 
@@ -1512,9 +822,9 @@ namespace NodeGraph.TK
         /// <summary>
         /// Returns a HitType depending on what Hit the cursor within the selected items
         /// </summary>
-        /// <param name="cursorLocation"></param>
+        /// <param name="location"></param>
         /// <returns></returns>
-        private HitType HitSelected(Vector2 cursorLocation)
+        private HitType HitSelected(Vector3 location)
         {
             //Rectangle HitTest = new RectangleF(this.ControlToView(cursorLocation), new Size());
 
@@ -1539,7 +849,7 @@ namespace NodeGraph.TK
         /// </summary>
         /// <param name="p_CursorLocation"></param>
         /// <returns></returns>
-        private HitType HitAll(Point p_CursorLocation)
+        private HitType HitAll(Vector3 location)
         {
             //Rectangle HitTest = new Rectangle(this.ControlToView(p_CursorLocation), new Size());
 
@@ -1561,7 +871,7 @@ namespace NodeGraph.TK
         /// </summary>
         /// <param name="p_CursorLocation"></param>
         /// <returns></returns>
-        private NodeGraphConnector GetHitConnector(Point p_CursorLocation)
+        private NodeGraphConnector GetHitConnector(Vector3 location)
         {
             //NodeGraphConnector v_OutConnector = null;
 
@@ -1585,19 +895,19 @@ namespace NodeGraph.TK
         /// </summary>
         private void ValidateLink()
         {
-            if (this.m_InputLink != null &&
-                this.m_OutputLink != null &&
-                this.m_InputLink != this.m_OutputLink &&
-                this.m_InputLink.Type != this.m_OutputLink.Type &&
-                this.m_InputLink.Data == this.m_OutputLink.Data)
+            if (this.link_input != null &&
+                this.link_output != null &&
+                this.link_input != this.link_output &&
+                this.link_input.Type != this.link_output.Type &&
+                this.link_input.Data == this.link_output.Data)
             {
-                if (m_InputLink.Type == ConnectorType.Output)
+                if (link_input.Type == ConnectorType.Output)
                 {
-                    if (IsLinked(m_OutputLink))
-                        Delete_LinkConnectors(m_OutputLink);
+                    if (IsLinked(link_output))
+                        Delete_LinkConnectors(link_output);
 
                     // Create Link
-                    NodeGraphLink link = new NodeGraphLink(m_InputLink, m_OutputLink);
+                    NodeGraphLink link = new NodeGraphLink(link_input, link_output);
 
                     // Add Link to View
                     this.graph.Links.Add(link);
@@ -1607,11 +917,11 @@ namespace NodeGraph.TK
                 }
                 else
                 {
-                    if (IsLinked(m_InputLink))
-                        Delete_LinkConnectors(m_InputLink);
+                    if (IsLinked(link_input))
+                        Delete_LinkConnectors(link_input);
 
                     // Create Link
-                    NodeGraphLink link = new NodeGraphLink(m_OutputLink, m_InputLink);
+                    NodeGraphLink link = new NodeGraphLink(link_output, link_input);
 
                     // Add Link to View
                     this.graph.Links.Add(link);
@@ -1621,8 +931,8 @@ namespace NodeGraph.TK
                 }
             }
 
-            this.m_InputLink = null;
-            this.m_OutputLink = null;
+            this.link_input = null;
+            this.link_output = null;
         }
 
         /// <summary>
@@ -1665,13 +975,11 @@ namespace NodeGraph.TK
         /// Moves the selection, given an offset
         /// </summary>
         /// <param name="offset"></param>
-        private void MoveSelection(Point offset)
+        private void MoveSelection(Vector3 offset)
         {
-            foreach (NodeGraphNode i_Node in this.graph.NodesSelected)
+            foreach (NodeGraphNode node in this.graph.NodesSelected)
             {
-                i_Node.X -= offset.X;
-                i_Node.Y -= offset.Y;
-                i_Node.UpdateHitRectangle();
+                node.Position += offset;
             }
         }
 
@@ -1721,30 +1029,19 @@ namespace NodeGraph.TK
             //Refresh();
         }
 
-        /// <summary>
-        /// Updates font size, depending of the View Zoom
-        /// </summary>
-        private void UpdateFontSize()
-        {
-            this.m_NodeScaledTitleFont = new Font(m_NodeTitleFont.Name, m_NodeTitleFont.Size * this.View.ViewZoomCurrent);
-            this.m_NodeScaledConnectorFont = new Font(m_NodeConnectorFont.Name, m_NodeConnectorFont.Size * this.View.ViewZoomCurrent);
-        }
 
         #endregion
 
-        private void NodeGraphPanel_Load(object sender, EventArgs e)
+        private void Timer_Tick(object sender, EventArgs e)
         {
-            //GL_Setup();
-            //GL_Setup_Viewport();
-            //GL_Setup_Camera();
-
-            //gl_timer.Enabled = true;
+            if (this.ViewGL != null)
+                this.ViewGL.Invalidate();
         }
 
-        private void GL_Setup()
+        private void Setup()
         {
             // Background Color
-            GL.ClearColor(BackColor.R / 255f, BackColor.G / 255f, BackColor.B / 255f, 1.0f);
+            GL.ClearColor(this.BackColor.R / 255f, this.BackColor.G / 255f, this.BackColor.B / 255f, 1.0f);
 
             // Backface Culling
             GL.CullFace(CullFaceMode.Back);
@@ -1770,7 +1067,7 @@ namespace NodeGraph.TK
             this.gl_loaded = true;
         }
 
-        private void GL_Setup_Viewport()
+        private void Setup_Viewport()
         {
             // Other Stuff
             int w = this.ClientSize.Width;
@@ -1787,7 +1084,7 @@ namespace NodeGraph.TK
         /// <summary>
         /// Camera
         /// </summary>
-        private void GL_Setup_Camera()
+        private void Setup_Camera()
         {
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadIdentity();
@@ -1809,34 +1106,95 @@ namespace NodeGraph.TK
             GL.MultMatrix(ref lookAt);
         }
 
-        private void gl_timer_Tick(object sender, EventArgs e)
+        private void Draw_Grid()
         {
-            this.Refresh();
+            Vector2 v0 = new Vector2(-4096, -4096);
+            Vector2 v1 = new Vector2(+4096, +4096);
+
+            GL.Color4(this.view.Grid_Color);
+
+            GL.Begin(PrimitiveType.Lines);
+
+            for (float i = v0.X; i < v1.X; i += this.view.Grid_Padding)
+            {
+                GL.Vertex3(i, v0.Y, 0);
+                GL.Vertex3(i, v1.Y, 0);
+
+            }
+            for (float i = v0.Y; i < v1.Y; i += this.view.Grid_Padding)
+            {
+                GL.Vertex3(v0.X, i, 0);
+                GL.Vertex3(v1.X, i, 0);
+            }
+
+            GL.End();
         }
 
-        private void glPanel_Load(object sender, EventArgs e)
+        /// <summary>
+        /// Draws the selection rectangle
+        /// </summary>
+        /// <param name="e"></param>
+        private void GL_Draw_SelectionBox()
         {
-            GL_Setup();
+            //if (this.m_eEditMode == NodeGraphEditMode.SelectingBox)
+            //{
+            //    Vector3 v0 = Vector3.Zero;
+            //    Vector3 v1 = Vector3.Zero;
 
-            GL_Setup_Viewport();
+            //    if (this.select_BoxOrigin.X > this.select_BoxCurrent.X)
+            //    {
+            //        r.X = this.select_BoxCurrent.X;
+            //        r.Width = this.select_BoxOrigin.X - this.select_BoxCurrent.X;
+            //    }
+            //    else
+            //    {
+            //        r.X = this.select_BoxOrigin.X;
+            //        r.Width = this.select_BoxCurrent.X - this.select_BoxOrigin.X;
+            //    }
+            //    if (this.select_BoxOrigin.Y > this.select_BoxCurrent.Y)
+            //    {
+            //        r.Y = this.select_BoxCurrent.Y;
+            //        r.Height = this.select_BoxOrigin.Y - this.select_BoxCurrent.Y;
+            //    }
+            //    else
+            //    {
+            //        r.Y = this.select_BoxOrigin.Y;
+            //        r.Height = this.select_BoxCurrent.Y - this.select_BoxOrigin.Y;
+            //    }
 
-            gl_loaded = true;
+
+            //    //e.Graphics.FillRectangle(this.m_SelectionFill, this.ViewToControl(r));
+            //    //e.Graphics.DrawRectangle(this.m_SelectionOutline, this.ViewToControl(r));
+
+            //    r = this.ViewToControl(r);
+
+            //    GL.Color4(this.view.Color_selection_fill);
+
+            //    GL.Begin(PrimitiveType.Quads);
+
+            //    GL.Vertex3(r.X, r.Y, 0);
+            //    GL.Vertex3(r.X + r.Width, r.Y, 0);
+            //    GL.Vertex3(r.X + r.Width, r.Y + r.Height, 0);
+            //    GL.Vertex3(r.X, r.Y + r.Height, 0);
+
+            //    GL.End();
+
+            //    GL.Color4(this.view.Color_selection_outline);
+
+            //    GL.Begin(PrimitiveType.LineLoop);
+
+            //    GL.Vertex3(r.X, r.Y, 0);
+            //    GL.Vertex3(r.X + r.Width, r.Y, 0);
+            //    GL.Vertex3(r.X + r.Width, r.Y + r.Height, 0);
+            //    GL.Vertex3(r.X, r.Y + r.Height, 0);
+
+            //    GL.End();
+            //}
         }
 
-        private void glPanel_Paint(object sender, PaintEventArgs e)
+        private void Draw_Debug()
         {
-            if (!this.gl_loaded)
-                return;
-
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            this.GL_Setup_Camera();
-
-            if (this.grid_enable)
-                this.GL_Draw_Grid();
-
-            // Select Box
-            this.GL_Draw_SelectionBox();
+            GL.Color3(Color.Aquamarine);
 
             GL.Begin(PrimitiveType.Points);
 
@@ -1849,15 +1207,105 @@ namespace NodeGraph.TK
             GL.Vertex3(0, 0, 0);
 
             GL.End();
-
-            this.GL_Draw_Debug_RefreshTick();
-
-            //glPanel.SwapBuffers();
         }
 
-        private void glPanel_Resize(object sender, EventArgs e)
+        private void Draw_Debug_RefreshTick()
         {
-            this.GL_Setup_Viewport();
+            GL.Color3(Color.Aquamarine);
+
+            GL.Begin(PrimitiveType.LineLoop);
+
+            GL.Vertex3(0, 0, 0);
+            GL.Vertex3(10, 0, 0);
+            GL.Vertex3(10, 4, 0);
+            GL.Vertex3(0, 4, 0);
+
+            GL.End();
+
+            GL.Begin(PrimitiveType.LineLoop);
+
+            GL.Vertex3(0, 0, 0);
+            GL.Vertex3(0 + gl_tick, 0, 0);
+            GL.Vertex3(0 + gl_tick, 4, 0);
+            GL.Vertex3(0, 4, 0);
+
+            GL.End();
+
+
+            this.gl_tick++;
+            this.gl_tick = this.gl_tick % 10;
+        }
+
+        private void ViewGL_Load(object sender, EventArgs e)
+        {
+            this.Setup();
+            this.Setup_Viewport();
+        }
+
+        private void ViewGL_Paint(object sender, PaintEventArgs e)
+        {
+            if (!this.gl_loaded || this.graph == null)
+                return;
+
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+            this.Setup_Camera();
+
+            if (this.view.Grid_Enable)
+                this.Draw_Grid();
+
+            // Select Box
+            //this.Draw_SelectionBox();
+
+            //if (this.DrawBackground != null) DrawBackground(this, e);
+
+            //// Smooth Behavior
+            //if (this.m_bSmoothBehavior)
+            //{
+            //    this.View.ViewZoomCurrent += (this.View.ViewZoom - this.View.ViewZoomCurrent) * 0.08f;
+            //    if (Math.Abs(this.View.ViewZoomCurrent - this.View.ViewZoom) < 0.005)
+            //    {
+            //        this.View.ViewZoomCurrent = this.View.ViewZoom;
+            //        UpdateFontSize();
+            //    }
+            //    else
+            //    {
+            //        UpdateFontSize();
+            //        this.Invalidate();
+            //    }
+            //}
+            //else
+            //{
+
+            //}
+
+
+            //e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+            //e.Graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
+
+
+            //foreach (NodeGraphNode i_Node in this.graph.Nodes)
+            //{
+            //    i_Node.Draw(e);
+            //}
+
+            //e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            //DrawLinkEditable(e);
+            //DrawAllLinks(e);
+            //e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+
+            //// Select Box
+            //DrawSelectionBox(e);
+
+            this.Draw_Debug();
+            this.Draw_Debug_RefreshTick();
+
+            this.ViewGL.SwapBuffers();
+        }
+
+        private void ViewGL_Resize(object sender, EventArgs e)
+        {
+            this.Setup_Viewport();
 
             this.Refresh();
         }

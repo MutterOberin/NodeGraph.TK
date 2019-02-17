@@ -91,7 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NodeGraph.TK\NodeGraph.TK.csproj">
-      <Project>{ad33efc3-c5cd-4f6f-a958-22e23f1f0b8b}</Project>
+      <Project>{94b7ce75-e9be-41fb-99ac-ca2d95e72e58}</Project>
       <Name>NodeGraph.TK</Name>
     </ProjectReference>
   </ItemGroup>

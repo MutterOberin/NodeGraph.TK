@@ -15,6 +15,12 @@ namespace NodeGraph.TK.Example
         public Form1()
         {
             InitializeComponent();
+
+            //NodeGraphPanel panel = new NodeGraphPanel();
+
+            //panel.Dock = DockStyle.Fill;
+
+            //this.Controls.Add(panel);
         }
     }
 }

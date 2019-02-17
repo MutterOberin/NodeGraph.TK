@@ -24,11 +24,8 @@ Inspired by Project: https://github.com/peeweek/NodeGraph/tree/master/NodeGraphC
 
 */
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
-using OpenTK;
 
 namespace NodeGraph.TK
 {
@@ -72,7 +69,7 @@ namespace NodeGraph.TK
 
     /// <summary>
     /// Represents a connector on a node
-    /// </summary>
+    /// </summary>    
     public class NodeGraphConnector
     {
         #region - Private Variables -
@@ -115,8 +112,6 @@ namespace NodeGraph.TK
             this.connectorType  = newConnectorType;
             this.connectorData  = newConnectorData;
             this.connectorIndex = newConnectorIndex;
-
-            this.brush = view.Panel.ConnectorFill;
         }
 
         /// <summary>
@@ -134,8 +129,6 @@ namespace NodeGraph.TK
             this.connectorType  = newConnectorType;
             this.connectorData  = newConnectorData;
             this.connectorIndex = newConnectorIndex;
-
-            this.brush = view.Panel.ConnectorFill;
         }
 
         #endregion
@@ -201,25 +194,25 @@ namespace NodeGraph.TK
         /// <returns>a rectangle determining the visible area of the connector</returns>
         public RectangleF GetArea()
         {
-            Vector2 position;
+            //Vector2 position;
 
-            RectangleF rectangle;
+            //RectangleF rectangle;
 
-            if (connectorType == ConnectorType.Input)
-            {
+            //if (connectorType == ConnectorType.Input)
+            //{
 
-                position = view.Panel.ViewToControl(new Vector2(parentNode.X, (parentNode.Y + view.Panel.NodeHeaderSize + 6 + (connectorIndex * 16))));
-                rectangle = new RectangleF(position.X, position.Y, (int)(12 * view.ViewZoomCurrent), (int)(8 * view.ViewZoomCurrent));
+            //    position = view.Panel.ViewToControl(new Vector2(parentNode.X, (parentNode.Y + view.Panel.NodeHeaderSize + 6 + (connectorIndex * 16))));
+            //    rectangle = new RectangleF(position.X, position.Y, (int)(12 * view.ViewZoomCurrent), (int)(8 * view.ViewZoomCurrent));
 
-            }
-            else
-            {
+            //}
+            //else
+            //{
 
-                position = view.Panel.ViewToControl(new Vector2(parentNode.X + (parentNode.HitRectangle.Width - 12), (parentNode.Y + view.Panel.NodeHeaderSize + 6 + (connectorIndex * 16))));
-                rectangle = new RectangleF(position.X, position.Y, (int)(12 * view.ViewZoomCurrent), (int)(8 * view.ViewZoomCurrent));
-            }
+            //    position = view.Panel.ViewToControl(new Vector2(parentNode.X + (parentNode.HitRectangle.Width - 12), (parentNode.Y + view.Panel.NodeHeaderSize + 6 + (connectorIndex * 16))));
+            //    rectangle = new RectangleF(position.X, position.Y, (int)(12 * view.ViewZoomCurrent), (int)(8 * view.ViewZoomCurrent));
+            //}
 
-            return rectangle;
+            return new Rectangle(0, 0, 10, 10);
         }
 
         /// <summary>
