@@ -23,6 +23,8 @@ OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 Inspired by Project: https://github.com/peeweek/NodeGraph/tree/master/NodeGraphControl
 
 */
+using System;
+using System.ComponentModel;
 using OpenTK;
 
 namespace NodeGraph.TK
@@ -64,12 +66,14 @@ namespace NodeGraph.TK
         /// <summary>
         /// The graph this view is displaying
         /// </summary>
+        [Browsable(false)]
         public NodeGraphGraph Graph { get => this.graph; set => this.graph = value; }
 
         /// <summary>
         /// The panel that contains this view
         /// </summary>
-        public NodeGraphPanel Panel { get => panel; set => panel = value; }
+        [Browsable(false)]
+        public NodeGraphPanel Panel { get => this.panel; set => this.panel = value; }
 
         /// <summary>
         /// The orthographic X coordinate of the current View

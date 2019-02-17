@@ -15,8 +15,6 @@ namespace NodeGraph.TK.Example
         public Form1()
         {
             InitializeComponent();
-
-            NodeGraphPanel.AddNode(new NodeGraphNode(0, 0, NodeGraphPanel.View, true));
         }
     }
 }

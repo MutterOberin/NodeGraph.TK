@@ -44,6 +44,14 @@ namespace NodeGraph.TK
 
         #region - Constructors -
 
+        public NodeGraphGraph()
+        {
+            this.nodes         = new List<NodeGraphNode>();
+            this.nodesSelected = new List<NodeGraphNode>();
+
+            this.links         = new List<NodeGraphLink>();
+        }
+
         #endregion
 
         #region - Properties -
@@ -94,6 +102,5 @@ namespace NodeGraph.TK
         }
 
         #endregion
-
     }
 }

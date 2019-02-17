@@ -79,10 +79,10 @@ namespace NodeGraph.TK
 
         private string name;
 
+        private NodeGraphView view;
         private NodeGraphNode parentNode;
         private ConnectorType connectorType;
         private ConnectorData connectorData;
-        private NodeGraphView view;
 
         private int connectorIndex;
 
@@ -228,29 +228,31 @@ namespace NodeGraph.TK
         /// <returns>a rectangle determining the Click area of the connector</returns>
         public Rectangle GetAreaHit()
         {
-            Point v_Position;
-            Rectangle v_ConnectorRectangle;
-            int Bleed = view.Panel.ConnectorHitZoneBleed;
+            //Point v_Position;
+            //Rectangle v_ConnectorRectangle;
+            //int Bleed = view.Panel.ConnectorHitZoneBleed;
 
-            if (connectorType == ConnectorType.Input)
-            {
-                v_Position = view.Panel.ViewToControl(new Point(parentNode.X, (parentNode.Y + view.Panel.NodeHeaderSize + 6 + (connectorIndex * 16))));
+            //if (connectorType == ConnectorType.Input)
+            //{
+            //    v_Position = view.Panel.ViewToControl(new Point(parentNode.X, (parentNode.Y + view.Panel.NodeHeaderSize + 6 + (connectorIndex * 16))));
 
-                v_ConnectorRectangle = new Rectangle(v_Position.X - Bleed, v_Position.Y - Bleed,
-                                                       (int)(12 * view.ViewZoomCurrent) + (2 * Bleed),
-                                                       (int)(8 * view.ViewZoomCurrent) + (2 * Bleed));
+            //    v_ConnectorRectangle = new Rectangle(v_Position.X - Bleed, v_Position.Y - Bleed,
+            //                                           (int)(12 * view.ViewZoomCurrent) + (2 * Bleed),
+            //                                           (int)(8 * view.ViewZoomCurrent) + (2 * Bleed));
 
-            }
-            else
-            {
+            //}
+            //else
+            //{
 
-                v_Position = view.Panel.ViewToControl(new Point(parentNode.X + (parentNode.HitRectangle.Width - 12), (parentNode.Y + view.Panel.NodeHeaderSize + 6 + (connectorIndex * 16))));
-                v_ConnectorRectangle = new Rectangle(v_Position.X - Bleed, v_Position.Y - Bleed,
-                                                       (int)(12 * view.ViewZoomCurrent) + (2 * Bleed),
-                                                       (int)(8 * view.ViewZoomCurrent) + (2 * Bleed));
-            }
+            //    v_Position = view.Panel.ViewToControl(new Point(parentNode.X + (parentNode.HitRectangle.Width - 12), (parentNode.Y + view.Panel.NodeHeaderSize + 6 + (connectorIndex * 16))));
+            //    v_ConnectorRectangle = new Rectangle(v_Position.X - Bleed, v_Position.Y - Bleed,
+            //                                           (int)(12 * view.ViewZoomCurrent) + (2 * Bleed),
+            //                                           (int)(8 * view.ViewZoomCurrent) + (2 * Bleed));
+            //}
 
-            return v_ConnectorRectangle;
+            //return v_ConnectorRectangle;
+
+            return new Rectangle(0, 0, 10, 10);
         }
 
         /// <summary>
@@ -260,20 +262,22 @@ namespace NodeGraph.TK
         /// <returns>Position of the text</returns>
         public Point GetTextPosition(PaintEventArgs e)
         {
-            Point v_TextPosition;
+            //Point v_TextPosition;
 
-            if (connectorType == ConnectorType.Input)
-            {
-                v_TextPosition = view.Panel.ViewToControl(new Point(parentNode.X + 16, parentNode.Y + view.Panel.NodeHeaderSize + 4 + (connectorIndex * 16)));
-            }
-            else
-            {
-                SizeF measure = e.Graphics.MeasureString(this.Name, view.Panel.NodeScaledConnectorFont);
-                v_TextPosition = view.Panel.ViewToControl(new Point(parentNode.X + (parentNode.HitRectangle.Width), parentNode.Y + view.Panel.NodeHeaderSize + 4 + (connectorIndex * 16)));
-                v_TextPosition.X = v_TextPosition.X - (int)(16.0f * view.ViewZoomCurrent) - (int)measure.Width;
-            }
+            //if (connectorType == ConnectorType.Input)
+            //{
+            //    v_TextPosition = view.Panel.ViewToControl(new Point(parentNode.X + 16, parentNode.Y + view.Panel.NodeHeaderSize + 4 + (connectorIndex * 16)));
+            //}
+            //else
+            //{
+            //    SizeF measure = e.Graphics.MeasureString(this.Name, view.Panel.NodeScaledConnectorFont);
+            //    v_TextPosition = view.Panel.ViewToControl(new Point(parentNode.X + (parentNode.HitRectangle.Width), parentNode.Y + view.Panel.NodeHeaderSize + 4 + (connectorIndex * 16)));
+            //    v_TextPosition.X = v_TextPosition.X - (int)(16.0f * view.ViewZoomCurrent) - (int)measure.Width;
+            //}
 
-            return v_TextPosition;
+            //return v_TextPosition;
+
+            return new Point(0, 0);
         }
 
         /// <summary>
@@ -283,18 +287,18 @@ namespace NodeGraph.TK
         /// <param name="ConnectorIndex"></param>
         public void Draw(PaintEventArgs e, int ConnectorIndex)
         {
-            Rectangle v_ConnectorRectangle = this.GetArea();
+            //Rectangle v_ConnectorRectangle = this.GetArea();
 
-            e.Graphics.FillRectangle(view.Panel.ConnectorFill, v_ConnectorRectangle);
-            e.Graphics.DrawRectangle(view.Panel.ConnectorOutline, v_ConnectorRectangle);
+            //e.Graphics.FillRectangle(view.Panel.ConnectorFill, v_ConnectorRectangle);
+            //e.Graphics.DrawRectangle(view.Panel.ConnectorOutline, v_ConnectorRectangle);
 
-            // If under zoom requirements for connector text...
-            if (view.ViewZoomCurrent > view.Panel.NodeConnectorTextZoomTreshold)
-            {
-                Point v_TextPosition = GetTextPosition(e);
+            //// If under zoom requirements for connector text...
+            //if (view.ViewZoomCurrent > view.Panel.NodeConnectorTextZoomTreshold)
+            //{
+            //    Point v_TextPosition = GetTextPosition(e);
 
-                e.Graphics.DrawString(this.Name, view.Panel.NodeScaledConnectorFont, view.Panel.ConnectorText, (float)v_TextPosition.X, (float)v_TextPosition.Y);
-            }
+            //    e.Graphics.DrawString(this.Name, view.Panel.NodeScaledConnectorFont, view.Panel.ConnectorText, (float)v_TextPosition.X, (float)v_TextPosition.Y);
+            //}
         }
 
         /// <summary>

@@ -33,6 +33,7 @@ using System.Windows.Forms;
 
 using System.Xml;
 using NodeGraph.TK.Source;
+using OpenTK;
 
 namespace NodeGraph.TK
 {
@@ -45,22 +46,26 @@ namespace NodeGraph.TK
 
         protected SolidBrush nodeFill;
 
-        protected Point guiLoc;
+        protected uint id;
 
-        protected int x;
-        protected int y;
-        protected int height;
-        protected int width;
+        protected float x;
+        protected float y;
+        protected float height;
+        protected float width;
+
+        protected bool selected;
         protected bool selectable;
         protected string comment;
 
-        //protected SI item;
+        protected string name;
 
-        protected String name;
-        protected List<NodeGraphConnector> connectors;
         protected NodeGraphView view;
 
-        public event PaintEventHandler onPostDraw;
+        protected List<NodeGraphConnector> connectors;
+
+        private static uint count;
+
+        public event PaintEventHandler PostDraw;
 
         #endregion
 
@@ -73,26 +78,26 @@ namespace NodeGraph.TK
         /// <param name="p_Y"></param>
         /// <param name="view"></param>
         /// <param name="selectable"></param>
-        public NodeGraphNode(int p_X, int p_Y, NodeGraphView view, bool selectable)
+        public NodeGraphNode(float X, float Y, NodeGraphView view, bool selectable)
         {
-            this.x           = p_X;
-            this.y           = p_Y;
-            this.view        = view;
-            this.width       = 140;
-            this.height      = 64;
-            this.name        = "Test Void Node";
-            this.selectable  = selectable;
-            this.Highlighted = false;
-            this.comment     = "";
-            this.guiLoc      = new Point(-1, -1);
+            this.id = count; count++;
+
+            this.x          = X;
+            this.y          = Y;
+            this.view       = view;
+            this.width      = 128;
+            this.height     = 64;
+            this.name       = "Test Void Node";
+            this.selected   = false;
+            this.selectable = selectable;
+            this.comment    = "";
 
             //Point p = new Point(view.ParentPanel.Location.X + view.ParentPanel.Width / 2,
             //                    view.ParentPanel.Location.Y + view.ParentPanel.Height / 2);
 
             //this.guiLoc = view.ParentPanel.PointToScreen(p);
-            
 
-            UpdateHitRectangle();
+            this.UpdateHitRectangle();
 
             this.connectors = new List<NodeGraphConnector>();
         }
@@ -101,46 +106,25 @@ namespace NodeGraph.TK
 
         #region - Properties -
 
-        [Category("Node GUI")]
-        public Point GUI_Location
-        {
-            get { return guiLoc; }
-            set { guiLoc = value; }
-        }
-
-        [Category("Node GUI")]
-        public int GUI_Location_X
-        {
-            get { return guiLoc.X; }
-            set { guiLoc.X = value; }
-        }
-
-        [Category("Node GUI")]
-        public int GUI_Location_Y
-        {
-            get { return guiLoc.Y; }
-            set { guiLoc.Y = value; }
-        }
-
         /// <summary>
         /// Gets / Sets Node Fill Color
         /// </summary>
         [Category("Node Properties")]
         public Color NodeFillColor
         {
-            get { return nodeFill.Color; }
-            set { nodeFill = new SolidBrush(value); }
+            get { return this.nodeFill.Color; }
+            set { this.nodeFill = new SolidBrush(value); }
         }
 
-        ///// <summary>
-        ///// Gets Sets the StreamViz SceneItem
-        ///// </summary>
-        //[Category("Node Item")]
-        //public virtual SI Item
-        //{
-        //    get { return item; }
-        //    set { item = value; }
-        //}
+        /// <summary>
+        /// Whether the node can be selected
+        /// </summary>
+        [Browsable(false)]
+        public bool Selected
+        {
+            get { return this.selected; }
+            set { this.selected = value; }
+        }
 
         /// <summary>
         /// Whether the node can be selected
@@ -165,40 +149,60 @@ namespace NodeGraph.TK
         /// X Position (ViewSpace) of the Node
         /// </summary>
         [Category("Node Properties")]
-        public int X
+        public float X
         {
-            get { return x; }
-            set { x = value; UpdateHitRectangle(); } 
+            get { return this.x; }
+            set
+            {
+                this.x = value;
+
+                this.UpdateHitRectangle();
+            }
         }
 
         /// <summary>
         /// Y Position (ViewSpace) of the Node
         /// </summary>
         [Category("Node Properties")]
-        public int Y
+        public float Y
         {
-            get { return y; }
-            set { y = value; UpdateHitRectangle(); }
+            get { return this.y; }
+            set
+            {
+                this.y = value;
+
+                this.UpdateHitRectangle();
+            }
         }
 
         /// <summary>
         /// Width (ViewSpace) of the node
         /// </summary>
         [Category("Node Properties")]
-        public int Width
+        public float Width
         {
             get { return this.width; }
-            set { this.width = value; this.UpdateHitRectangle(); }
+            set
+            {
+                this.width = value;
+
+                this.UpdateHitRectangle();
+            }
         }
 
         /// <summary>
         /// Height (ViewSpace) of the node
         /// </summary>
         [Category("Node Properties")]
-        public int Height
+        public float Height
         {
             get { return this.height; }
-            set { this.height = value; this.UpdateHitRectangle(); }
+            set
+            {
+                this.height = value;
+
+                this.UpdateHitRectangle();
+            }
         }
 
         /// <summary>
@@ -211,16 +215,10 @@ namespace NodeGraph.TK
         }
 
         /// <summary>
-        /// Whether the node is highlighted
+        /// The hit rectangle of the Node
         /// </summary>
         [Browsable(false)]
-        public bool Highlighted;
-
-        /// <summary>
-        /// The Hit (Mouse Click) rectangle of the Node
-        /// </summary>
-        [Browsable(false)]
-        public Rectangle HitRectangle;
+        public RectangleF HitRectangle;
 
         /// <summary>
         /// The list of NodeGraphConnectors owned by this Node
@@ -232,7 +230,7 @@ namespace NodeGraph.TK
         }
 
         /// <summary>
-        /// The displayed Commentary of the node
+        /// The displayed comment of the node
         /// </summary>
         [Category("Node Properties")]
         public string Comment
@@ -248,13 +246,9 @@ namespace NodeGraph.TK
         /// <summary>
         /// Returns the name of the node: can be overriden to match custom names.
         /// </summary>
-        /// <returns></returns>
         protected virtual string GetName()
         {
-            //if (item != null)
-            //    return this.item.ToString();
-
-            return "No Item";
+            return $"Node {this.id.ToString("000")} Name: {this.name}";
         }
 
         /// <summary>
@@ -264,13 +258,7 @@ namespace NodeGraph.TK
         /// <returns>the connector index</returns>
         public virtual int GetConnectorIndex(NodeGraphConnector connector)
         {
-            for (int i = 0; i < this.connectors.Count; i++)
-            {
-                if (this.connectors[i] == connector) 
-                    return i;
-            }
-
-            return -1;
+            return this.connectors.IndexOf(connector);
         }
 
         /// <summary>
@@ -278,15 +266,7 @@ namespace NodeGraph.TK
         /// </summary>
         public virtual int GetConnectorCount(ConnectorType type)
         {
-            int count = 0;
-
-            for (int i = 0; i < this.connectors.Count; i++)
-            {
-                if (this.connectors[i].Type == type)
-                    count++;
-            }
-
-            return count;
+            return this.connectors.FindAll(x => x.Type == type).Count;
         }
 
         /// <summary>
@@ -294,15 +274,7 @@ namespace NodeGraph.TK
         /// </summary>
         public virtual int GetConnectorLinkedCount(ConnectorType type)
         {
-            int count = 0;
-
-            for (int i = 0; i < this.connectors.Count; i++)
-            {
-                if (this.connectors[i].Type == type && this.connectors[i].CanProcess())
-                    count++;
-            }
-
-            return count;
+            return this.connectors.FindAll(x => x.Type == type && x.CanProcess()).Count;
         }
 
         /// <summary>
@@ -318,7 +290,7 @@ namespace NodeGraph.TK
         /// </summary>
         public void UpdateHitRectangle()
         {
-            this.HitRectangle = new Rectangle(x, y, Width, Height);
+            this.HitRectangle = new RectangleF(x, y, Width, Height);
         }
 
         /// <summary>
@@ -346,27 +318,26 @@ namespace NodeGraph.TK
         /// <param name="e"></param>
         public virtual void Draw(PaintEventArgs e)
         {
-            Point CtrlPos = view.Panel.ViewToControl(new Point(x, y));
+            Vector2 CtrlPos = view.Panel.ViewToControl(new Vector2(x, y));
 
-            int ScaledX = CtrlPos.X;
-            int ScaledY = CtrlPos.Y;
+            float ScaledX = CtrlPos.X;
+            float ScaledY = CtrlPos.Y;
 
-            Rectangle ViewRectangle = new Rectangle(CtrlPos.X,
-                                                    CtrlPos.Y,
+            Rectangle ViewRectangle = new Rectangle((int)CtrlPos.X,
+                                                    (int)CtrlPos.Y,
                                                     (int)(this.HitRectangle.Width * view.ViewZoomCurrent),
                                                     (int)(this.HitRectangle.Height * view.ViewZoomCurrent)
                                                     );
             // NODE SHADOW
             if (this.ParentView.Panel.DrawShadow)
             {
-                e.Graphics.DrawImage(NodeGraphResources.NodeShadow, ParentView.Panel.ViewToControl(new Rectangle(this.x - (int)(0.1f * this.Width) + 4,
-                                                                                                                       this.y - (int)(0.1f * this.Height) + 4,
-                                                                                                                       this.Width + (int)(0.2f * this.Width) - 4,
-                                                                                                                       this.Height + (int)(0.2f * this.Height) - 4)
-                                                                                                         ));
+                //e.Graphics.DrawImage(NodeGraphResources.NodeShadow, ParentView.Panel.ViewToControl(new Rectangle(this.x - (int)(0.1f * this.Width) + 4,
+                //                                                                                                       this.y - (int)(0.1f * this.Height) + 4,
+                //                                                                                                       this.Width + (int)(0.2f * this.Width) - 4,
+                //                                                                                                       this.Height + (int)(0.2f * this.Height) - 4)));
             }
             // NODE
-            if (!this.Highlighted)
+            if (!this.Selected)
             {
                 if (nodeFill != null)
                     e.Graphics.FillRectangle(nodeFill, ViewRectangle);
@@ -384,16 +355,14 @@ namespace NodeGraph.TK
             }
 
             // VALID/INVALID NODE
-
-            Point v_CtrlSignalPosition = view.Panel.ViewToControl(new Point(x + Width - 20, y + 4));
-            Rectangle v_SignalRectangle = new Rectangle(v_CtrlSignalPosition.X, v_CtrlSignalPosition.Y, (int)(16 * view.ViewZoomCurrent), (int)(16 * view.ViewZoomCurrent));
+            // Removed
 
             // IF SUFFICENT ZOOM LEVEL = DRAW TEXT
             if (view.ViewZoomCurrent > view.Panel.NodeTitleZoomThreshold)
             {
                 // DrawText
-                e.Graphics.DrawString(this.Name, view.Panel.NodeScaledTitleFont, view.Panel.NodeTextShadow, new Point(ScaledX + (int)(2 * view.ViewZoomCurrent) + 1, ScaledY + (int)(2 * view.ViewZoomCurrent) + 1));
-                e.Graphics.DrawString(this.Name, view.Panel.NodeScaledTitleFont, view.Panel.NodeText, new Point(ScaledX + (int)(2 * view.ViewZoomCurrent), ScaledY + (int)(2 * view.ViewZoomCurrent)));
+                //e.Graphics.DrawString(this.Name, view.Panel.NodeScaledTitleFont, view.Panel.NodeTextShadow, new Point(ScaledX + (int)(2 * view.ViewZoomCurrent) + 1, ScaledY + (int)(2 * view.ViewZoomCurrent) + 1));
+                //e.Graphics.DrawString(this.Name, view.Panel.NodeScaledTitleFont, view.Panel.NodeText, new Point(ScaledX + (int)(2 * view.ViewZoomCurrent), ScaledY + (int)(2 * view.ViewZoomCurrent)));
             }
 
             //InputConnectors
@@ -405,11 +374,11 @@ namespace NodeGraph.TK
             // Comment
             if (!string.IsNullOrEmpty(this.comment))
             {
-                e.Graphics.DrawString(this.comment, view.Panel.NodeScaledTitleFont, view.Panel.NodeText, new Point(ScaledX, ScaledY - (int)(16 * view.ViewZoomCurrent)));
+                //e.Graphics.DrawString(this.comment, view.Panel.NodeScaledTitleFont, view.Panel.NodeText, new Point(ScaledX, ScaledY - (int)(16 * view.ViewZoomCurrent)));
             }
 
             // Post-draw event
-            this.onPostDraw?.Invoke(this, e);
+            this.PostDraw?.Invoke(this, e);
         }
 
         /// <summary>
@@ -433,40 +402,9 @@ namespace NodeGraph.TK
             return null;
         }
 
-        /// <summary>
-        /// Dispose the coresponding item
-        /// </summary>
-        public virtual void DisposeItem()
-        {
-            //if (item != null)
-            //    item.Dispose();
-        }
-
-        /// <summary>
-        /// Serialize to XML Node
-        /// </summary>
-        /// <param name="node"></param>
-        public virtual void Serialize(XmlElement node)
-        {
-            //Util_XML.Append(node.OwnerDocument, node, "GUI_Location", this.guiLoc);
-        }
-
-        /// <summary>
-        /// Deserialize from XML Node
-        /// </summary>
-        /// <param name="node"></param>
-        public virtual void Deserialize(XmlNode node)
-        {
-            //foreach (XmlNode childNode in node.ChildNodes)
-            //{
-            //    if (childNode.Name.Equals("GUI_Location"))
-            //        this.guiLoc = Util_XML.Read_Point(childNode);
-            //}
-        }
-
         public override string ToString()
         {
-            return "Node " + GetName();
+            return GetName();
         }
 
         #endregion

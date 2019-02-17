@@ -51,15 +51,20 @@ namespace NodeGraph.TK
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            this.gl_timer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
+            // 
+            // gl_timer
+            // 
+            this.gl_timer.Interval = 30;
+            this.gl_timer.Tick += new System.EventHandler(this.gl_timer_Tick);
             // 
             // NodeGraphPanel
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(58)))), ((int)(((byte)(58)))));
             this.Name = "NodeGraphPanel";
-            this.Size = new System.Drawing.Size(536, 448);
+            this.Size = new System.Drawing.Size(512, 512);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.NodeGraphPanel_Paint);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NodeGraphPanel_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.NodeGraphPanel_KeyUp);
@@ -76,5 +81,6 @@ namespace NodeGraph.TK
 
         #endregion
 
+        private System.Windows.Forms.Timer gl_timer;
     }
 }

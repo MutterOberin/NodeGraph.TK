@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("NodeGraph.TK")]
+[assembly: AssemblyTitle("NodeGraphTK")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("NodeGraph.TK")]
+[assembly: AssemblyProduct("NodeGraphTK")]
 [assembly: AssemblyCopyright("Copyright © Wito Engelke 2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
