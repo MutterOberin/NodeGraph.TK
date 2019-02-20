@@ -318,13 +318,13 @@ namespace NodeGraph.TK
             //                                        (int)(this.HitRectangle.Height * view.ViewZoomCurrent)
             //                                        );
             // NODE SHADOW
-            if (this.ParentView.Panel.EnableShadow)
-            {
+            //if (this.ParentView.Panel.EnableShadow)
+            //{
                 //e.Graphics.DrawImage(NodeGraphResources.NodeShadow, ParentView.Panel.ViewToControl(new Rectangle(this.x - (int)(0.1f * this.Width) + 4,
                 //                                                                                                       this.y - (int)(0.1f * this.Height) + 4,
                 //                                                                                                       this.Width + (int)(0.2f * this.Width) - 4,
                 //                                                                                                       this.Height + (int)(0.2f * this.Height) - 4)));
-            }
+            //}
             //// NODE
             //if (!this.Selected)
             //{

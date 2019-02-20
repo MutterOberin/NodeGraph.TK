@@ -308,10 +308,10 @@ namespace NodeGraph.TK
             }
             if (this.connectorType == ConnectorType.Input)
             {
-                NodeGraphConnector linkedOutputConnector = view.Panel.GetLink(this);
+                //NodeGraphConnector linkedOutputConnector = view.Panel.GetLink(this);
 
-                if (linkedOutputConnector != null)
-                    return linkedOutputConnector.Process();
+                //if (linkedOutputConnector != null)
+                //    return linkedOutputConnector.Process();
             }
 
             return this.parentNode.Name + " Connector: " + this.Name + " not linked";
@@ -326,11 +326,11 @@ namespace NodeGraph.TK
             // For Input Only
             if (this.connectorType == ConnectorType.Input)
             {
-                NodeGraphConnector v_Connector = view.Panel.GetLink(this);
+                //NodeGraphConnector v_Connector = view.Panel.GetLink(this);
 
-                // No link is connected
-                if (v_Connector == null)
-                    return false;        
+                //// No link is connected
+                //if (v_Connector == null)
+                //    return false;        
             }
 
             // Output or Connected Inputs are fine

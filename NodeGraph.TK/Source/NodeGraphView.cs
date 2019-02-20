@@ -31,7 +31,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Windows.Forms;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -62,8 +62,6 @@ namespace NodeGraph.TK
 
         private NodeGraphGraph graph;
 
-        private NodeGraphPanel panel;
-
         #region - - Misc - -
 
         private float node_header_size;
@@ -81,6 +79,7 @@ namespace NodeGraph.TK
         #region - - Colors - -
 
         // Colors
+        private Vector4 color_background;
         private Vector4 color_node_header;
         private Vector4 color_node_text;
         private Vector4 color_node_text_shadow;
@@ -131,9 +130,8 @@ namespace NodeGraph.TK
         /// <summary>
         /// Creates a new NodeGraphView in a NodeGraphPanel
         /// </summary>
-        public NodeGraphView(NodeGraphPanel panel, NodeGraphGraph graph)
+        public NodeGraphView(NodeGraphGraph graph)
         {
-            this.panel = panel;
             this.graph = graph;
 
             this.ViewX           = 0;
@@ -149,6 +147,7 @@ namespace NodeGraph.TK
 
             this.connector_hzb = 2;
 
+            this.color_background                 = NodeGraphUtil.ColorToVector4(Color.FromArgb(58, 58, 58));
             this.color_node_text                  = NodeGraphUtil.ColorToVector4(Color.FromArgb(255, 255, 255, 255));
             this.color_node_text_shadow           = NodeGraphUtil.ColorToVector4(Color.FromArgb(128, 0, 0, 0));
             this.color_node_fill                  = NodeGraphUtil.ColorToVector4(Color.FromArgb(255, 128, 128, 128));
@@ -179,7 +178,7 @@ namespace NodeGraph.TK
             this.grid_padding = 64;
             this.grid_alpha   = 0.125f;
 
-            if ((this.panel.BackColor.R + this.panel.BackColor.G + this.panel.BackColor.B) / 3.0f < 128)
+            if ((this.color_background.X + this.color_background.Y + this.color_background.Z) / 3.0f < 0.5f)
                 this.grid_color = new Vector4(1.0f, 1.0f, 1.0f, this.grid_alpha);
             else
                 this.grid_color = new Vector4(0.0f, 0.0f, 0.0f, this.grid_alpha);
@@ -194,18 +193,6 @@ namespace NodeGraph.TK
         /// </summary>
         [Browsable(false)]
         public NodeGraphGraph Graph { get => this.graph; set => this.graph = value; }
-
-        /// <summary>
-        /// The panel that contains this view
-        /// </summary>
-        [Browsable(false)]
-        public NodeGraphPanel Panel
-        {
-            get => this.panel; set
-            {
-                this.panel = value;
-            }
-        }
 
         #region - - View - -
 
@@ -287,6 +274,9 @@ namespace NodeGraph.TK
 
         [Category("NodeGraph View Colors")]
         public Vector4 Color_node_signal_invalid { get => this.color_node_signal_invalid; set => this.color_node_signal_invalid = value; }
+
+        [Category("NodeGraph View Colors")]
+        public Vector4 Color_background { get => this.color_background; set => this.color_background = value; }
 
         #endregion
 

@@ -23,6 +23,7 @@ OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 Inspired by Project: https://github.com/peeweek/NodeGraph/tree/master/NodeGraphControl
 
 */
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -30,6 +31,7 @@ using System.Drawing;
 using System.Windows.Forms;
 
 using OpenTK;
+using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
 namespace NodeGraph.TK
@@ -62,11 +64,7 @@ namespace NodeGraph.TK
     }
     #endregion
 
-    #region CLASS NodeGraphPanel
-    /// <summary>
-    /// 
-    /// </summary>
-    public partial class NodeGraphPanel : UserControl
+    public partial class NodeGraphGL : GLControl
     {
         #region - Event Handler -
 
@@ -120,17 +118,15 @@ namespace NodeGraph.TK
 
         #endregion
 
-        #region - Constructor -
+        #region - Constructors -
 
-        /// <summary>
-        /// Creates a UserControl component that displays NodeGraphViews and let interact with NodeGraphNodes & NodeGraphLinks
-        /// </summary>
-        public NodeGraphPanel()
+        public NodeGraphGL()
+            : base(new GraphicsMode(new ColorFormat(32), 24, 8, 8), 4, 5, GraphicsContextFlags.ForwardCompatible)
         {
             InitializeComponent();
 
             this.graph = new NodeGraphGraph("Test");
-            this.view  = new NodeGraphView(this, graph);
+            this.view = new NodeGraphView(graph);
 
             this.Dock = DockStyle.Fill;
             this.DoubleBuffered = true;
@@ -378,7 +374,7 @@ namespace NodeGraph.TK
         {
             if (this.EnableDrawDebug)
             {
-                this.NodeGraphPanel_Debug.Refresh();
+                //this.NodeGraphPanel_Debug.Refresh();
             }
         }
 
@@ -1029,17 +1025,20 @@ namespace NodeGraph.TK
             //Refresh();
         }
 
-
-        #endregion
-
         private void Timer_Tick(object sender, EventArgs e)
         {
-            if (this.ViewGL != null)
-                this.ViewGL.Invalidate();
+            //if (this.ViewGL != null)
+            //    this.ViewGL.Invalidate();
         }
 
         private void Setup()
         {
+            if (base.DesignMode)
+            {
+                Console.WriteLine("Design Mode");
+                return;
+            }
+
             // Background Color
             GL.ClearColor(this.BackColor.R / 255f, this.BackColor.G / 255f, this.BackColor.B / 255f, 1.0f);
 
@@ -1069,6 +1068,12 @@ namespace NodeGraph.TK
 
         private void Setup_Viewport()
         {
+            if (base.DesignMode)
+            {
+                Console.WriteLine("Design Mode");
+                return;
+            }
+
             // Other Stuff
             int w = this.ClientSize.Width;
             int h = this.ClientSize.Height;
@@ -1134,7 +1139,7 @@ namespace NodeGraph.TK
         /// Draws the selection rectangle
         /// </summary>
         /// <param name="e"></param>
-        private void GL_Draw_SelectionBox()
+        private void Draw_SelectionBox()
         {
             //if (this.m_eEditMode == NodeGraphEditMode.SelectingBox)
             //{
@@ -1231,19 +1236,24 @@ namespace NodeGraph.TK
 
             GL.End();
 
-
             this.gl_tick++;
             this.gl_tick = this.gl_tick % 10;
         }
 
-        private void ViewGL_Load(object sender, EventArgs e)
+        private void NodeGraphGL_Load(object sender, EventArgs e)
         {
             this.Setup();
             this.Setup_Viewport();
         }
 
-        private void ViewGL_Paint(object sender, PaintEventArgs e)
+        private void NodeGraphGL_Paint(object sender, PaintEventArgs e)
         {
+            if (base.DesignMode)
+            {
+                this.BackColor = Color.FromArgb(58, 58, 58);
+                return;
+            }
+
             if (!this.gl_loaded || this.graph == null)
                 return;
 
@@ -1300,17 +1310,18 @@ namespace NodeGraph.TK
             this.Draw_Debug();
             this.Draw_Debug_RefreshTick();
 
-            this.ViewGL.SwapBuffers();
+            this.SwapBuffers();
         }
 
-        private void ViewGL_Resize(object sender, EventArgs e)
+        private void NodeGraphGL_Resize(object sender, EventArgs e)
         {
             this.Setup_Viewport();
 
             this.Refresh();
         }
+
+        #endregion
     }
-    #endregion
 
     #region DELEGATES / EVENTARGS
 

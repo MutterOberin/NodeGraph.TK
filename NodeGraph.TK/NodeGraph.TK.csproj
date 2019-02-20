@@ -51,21 +51,15 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Source\NodeGraphConnector.cs" />
-    <Compile Include="Source\NodeGraphGL.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Source\NodeGraphGL.Designer.cs">
-      <DependentUpon>NodeGraphGL.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Source\NodeGraphGraph.cs" />
-    <Compile Include="Source\NodeGraphLink.cs" />
-    <Compile Include="Source\NodeGraphNode.cs" />
     <Compile Include="Source\NodeGraphPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Source\NodeGraphPanel.Designer.cs">
       <DependentUpon>NodeGraphPanel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Source\NodeGraphGraph.cs" />
+    <Compile Include="Source\NodeGraphLink.cs" />
+    <Compile Include="Source\NodeGraphNode.cs" />
     <Compile Include="Source\NodeGraphUtil.cs" />
     <Compile Include="Source\NodeGraphView.cs" />
   </ItemGroup>
