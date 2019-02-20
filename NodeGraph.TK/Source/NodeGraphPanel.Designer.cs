@@ -1,6 +1,6 @@
 ﻿namespace NodeGraph.TK
 {
-    partial class NodeGraphGL
+    partial class NodeGraphPanel
     {
         /// <summary> 
         /// Required designer variable.
@@ -30,13 +30,19 @@
         {
             this.SuspendLayout();
             // 
-            // NodeGraphGL
+            // NodeGraphPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Name = "NodeGraphGL";
-            this.Load += new System.EventHandler(this.NodeGraphGL_Load);
-            this.Resize += new System.EventHandler(this.NodeGraphGL_Resize);
+            this.Name = "NodeGraphPanel";
+            this.Load += new System.EventHandler(this.NodeGraphPanel_Load);
+            this.Paint += new System.Windows.Forms.PaintEventHandler(this.NodeGraphPanel_Paint);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NodeGraphPanel_KeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.NodeGraphPanel_KeyUp);
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.NodeGraphPanel_MouseDown);
+            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.NodeGraphPanel_MouseMove);
+            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.NodeGraphPanel_MouseUp);
+            this.Resize += new System.EventHandler(this.NodeGraphPanel_Resize);
             this.ResumeLayout(false);
 
         }

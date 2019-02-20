@@ -225,58 +225,58 @@ namespace NodeGraph.TK
         #region - - Colors - -
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_node_text { get => this.color_node_text; set => this.color_node_text = value; }
+        public Vector4 ColorNodeText { get => this.color_node_text; set => this.color_node_text = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_node_text_shadow { get => this.color_node_text_shadow; set => this.color_node_text_shadow = value; }
+        public Vector4 ColorNodeTextShadow { get => this.color_node_text_shadow; set => this.color_node_text_shadow = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_node_fill { get => this.color_node_fill; set => this.color_node_fill = value; }
+        public Vector4 ColorNodeFill { get => this.color_node_fill; set => this.color_node_fill = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_node_fill_selected { get => this.color_node_fill_selected; set => this.color_node_fill_selected = value; }
+        public Vector4 ColorNodeFillSelected { get => this.color_node_fill_selected; set => this.color_node_fill_selected = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_node_outline { get => this.color_node_outline; set => this.color_node_outline = value; }
+        public Vector4 ColorNodeOutline { get => this.color_node_outline; set => this.color_node_outline = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_node_outline_selected { get => this.color_node_outline_selected; set => this.color_node_outline_selected = value; }
+        public Vector4 ColorNodeOutlineSelected { get => this.color_node_outline_selected; set => this.color_node_outline_selected = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_connector_text { get => this.color_connector_text; set => this.color_connector_text = value; }
+        public Vector4 ColorConnectorText { get => this.color_connector_text; set => this.color_connector_text = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_connector_fill { get => this.color_connector_fill; set => this.color_connector_fill = value; }
+        public Vector4 ColorConnectorFill { get => this.color_connector_fill; set => this.color_connector_fill = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_connector_outline { get => this.color_connector_outline; set => this.color_connector_outline = value; }
+        public Vector4 ColorConnectorOutline { get => this.color_connector_outline; set => this.color_connector_outline = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_connector_fill_selected { get => this.color_connector_fill_selected; set => this.color_connector_fill_selected = value; }
+        public Vector4 ColorConnectorFillSelected { get => this.color_connector_fill_selected; set => this.color_connector_fill_selected = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_connector_outline_selected { get => this.color_connector_outline_selected; set => this.color_connector_outline_selected = value; }
+        public Vector4 ColorConnectorOutline_elected { get => this.color_connector_outline_selected; set => this.color_connector_outline_selected = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_selection_fill { get => this.color_selection_fill; set => this.color_selection_fill = value; }
+        public Vector4 ColorSelectionFill { get => this.color_selection_fill; set => this.color_selection_fill = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_selection_outline { get => this.color_selection_outline; set => this.color_selection_outline = value; }
+        public Vector4 ColorSelectionOutline { get => this.color_selection_outline; set => this.color_selection_outline = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_link { get => this.color_link; set => this.color_link = value; }
+        public Vector4 ColorLink { get => this.color_link; set => this.color_link = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_link_edit { get => this.color_link_edit; set => this.color_link_edit = value; }
+        public Vector4 ColorLinkEdit { get => this.color_link_edit; set => this.color_link_edit = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_node_signal_valid { get => this.color_node_signal_valid; set => this.color_node_signal_valid = value; }
+        public Vector4 ColorNodeSignalValid { get => this.color_node_signal_valid; set => this.color_node_signal_valid = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_node_signal_invalid { get => this.color_node_signal_invalid; set => this.color_node_signal_invalid = value; }
+        public Vector4 ColorNodeSignalInvalid { get => this.color_node_signal_invalid; set => this.color_node_signal_invalid = value; }
 
         [Category("NodeGraph View Colors")]
-        public Vector4 Color_background { get => this.color_background; set => this.color_background = value; }
+        public Vector4 ColorBackground { get => this.color_background; set => this.color_background = value; }
 
         #endregion
 

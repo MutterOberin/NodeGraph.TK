@@ -64,7 +64,7 @@ namespace NodeGraph.TK
     }
     #endregion
 
-    public partial class NodeGraphGL : GLControl
+    public partial class NodeGraphPanel : GLControl
     {
         #region - Event Handler -
 
@@ -120,7 +120,7 @@ namespace NodeGraph.TK
 
         #region - Constructors -
 
-        public NodeGraphGL()
+        public NodeGraphPanel()
             : base(new GraphicsMode(new ColorFormat(32), 24, 8, 8), 4, 5, GraphicsContextFlags.ForwardCompatible)
         {
             InitializeComponent();
@@ -363,39 +363,6 @@ namespace NodeGraph.TK
 
             //    e.Graphics.FillPolygon(linkBrush, Arrow);
             //}
-        }
-
-        /// <summary>
-        /// OnPaint Manager: Draws the canvas
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void NodeGraphPanel_Paint(object sender, PaintEventArgs e)
-        {
-            if (this.EnableDrawDebug)
-            {
-                //this.NodeGraphPanel_Debug.Refresh();
-            }
-        }
-
-        private void NodeGraphPanel_Debug_Paint(object sender, PaintEventArgs e)
-        {
-            e.Graphics.DrawString("Edit Mode:" + m_eEditMode.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 0.0f));
-            e.Graphics.DrawString("ViewX: " + this.view.ViewX.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 10.0f));
-            e.Graphics.DrawString("ViewY: " + this.view.ViewY.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 20.0f));
-            e.Graphics.DrawString("ViewZoom: " + this.view.ViewZoom.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 30.0f));
-
-            e.Graphics.DrawString("ViewSpace Cursor Location:" + this.mouse_position_view.X.ToString() + " : " + this.mouse_position_view.Y.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 50.0f));
-
-            e.Graphics.DrawString("AltPressed: " + this.key_down_alt.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 70.0f));
-
-            // BELOW: DEBUG ELEMENTS
-
-            //Pen originPen = new Pen(Color.Lime);
-            //e.Graphics.DrawLine(originPen, this.ViewToControl(new Point(-100, 0)), this.ViewToControl(new Point(100, 0)));
-            //e.Graphics.DrawLine(originPen, this.ViewToControl(new Point(0, -100)), this.ViewToControl(new Point(0, 100)));
-
-            //e.Graphics.DrawBezier(originPen, this.ViewToControl(this.m_SelectBoxOrigin), this.ViewToControl(this.m_SelectBoxOrigin), this.ViewToControl(this.m_SelectBoxCurrent), this.ViewToControl(this.m_SelectBoxCurrent));
         }
 
         /// <summary>
@@ -1040,7 +1007,7 @@ namespace NodeGraph.TK
             }
 
             // Background Color
-            GL.ClearColor(this.BackColor.R / 255f, this.BackColor.G / 255f, this.BackColor.B / 255f, 1.0f);
+            GL.ClearColor(this.view.ColorBackground.X, this.view.ColorBackground.Y, this.view.ColorBackground.Z, 1.0f);
 
             // Backface Culling
             GL.CullFace(CullFaceMode.Back);
@@ -1240,13 +1207,13 @@ namespace NodeGraph.TK
             this.gl_tick = this.gl_tick % 10;
         }
 
-        private void NodeGraphGL_Load(object sender, EventArgs e)
+        private void NodeGraphPanel_Load(object sender, EventArgs e)
         {
             this.Setup();
             this.Setup_Viewport();
         }
 
-        private void NodeGraphGL_Paint(object sender, PaintEventArgs e)
+        private void NodeGraphPanel_Paint(object sender, PaintEventArgs e)
         {
             if (base.DesignMode)
             {
@@ -1307,13 +1274,38 @@ namespace NodeGraph.TK
             //// Select Box
             //DrawSelectionBox(e);
 
+            if (this.EnableDrawDebug)
+            {
+                //this.NodeGraphPanel_Debug.Refresh();
+            }
+
             this.Draw_Debug();
             this.Draw_Debug_RefreshTick();
 
             this.SwapBuffers();
         }
 
-        private void NodeGraphGL_Resize(object sender, EventArgs e)
+        private void NodeGraphPanel_Paint_Debug(object sender, PaintEventArgs e)
+        {
+            e.Graphics.DrawString("Edit Mode:" + m_eEditMode.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 0.0f));
+            e.Graphics.DrawString("ViewX: " + this.view.ViewX.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 10.0f));
+            e.Graphics.DrawString("ViewY: " + this.view.ViewY.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 20.0f));
+            e.Graphics.DrawString("ViewZoom: " + this.view.ViewZoom.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 30.0f));
+
+            e.Graphics.DrawString("ViewSpace Cursor Location:" + this.mouse_position_view.X.ToString() + " : " + this.mouse_position_view.Y.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 50.0f));
+
+            e.Graphics.DrawString("AltPressed: " + this.key_down_alt.ToString(), this.view.Font_Debug, Brushes.GreenYellow, new PointF(0.0f, 70.0f));
+
+            // BELOW: DEBUG ELEMENTS
+
+            //Pen originPen = new Pen(Color.Lime);
+            //e.Graphics.DrawLine(originPen, this.ViewToControl(new Point(-100, 0)), this.ViewToControl(new Point(100, 0)));
+            //e.Graphics.DrawLine(originPen, this.ViewToControl(new Point(0, -100)), this.ViewToControl(new Point(0, 100)));
+
+            //e.Graphics.DrawBezier(originPen, this.ViewToControl(this.m_SelectBoxOrigin), this.ViewToControl(this.m_SelectBoxOrigin), this.ViewToControl(this.m_SelectBoxCurrent), this.ViewToControl(this.m_SelectBoxCurrent));
+        }
+
+        private void NodeGraphPanel_Resize(object sender, EventArgs e)
         {
             this.Setup_Viewport();
 
