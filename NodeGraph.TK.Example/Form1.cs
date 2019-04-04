@@ -21,6 +21,13 @@ namespace NodeGraph.TK.Example
             //panel.Dock = DockStyle.Fill;
 
             //this.Controls.Add(panel);
+
+            this.timer_redraw.Enabled = true;
+        }
+
+        private void timer_redraw_Tick(object sender, EventArgs e)
+        {
+            nodeGraphGL1.Invalidate();
         }
     }
 }

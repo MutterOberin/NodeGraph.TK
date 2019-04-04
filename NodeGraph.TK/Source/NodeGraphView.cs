@@ -134,8 +134,8 @@ namespace NodeGraph.TK
         {
             this.graph = graph;
 
-            this.ViewX           = 0;
-            this.ViewY           = 0;
+            this.ViewX           = 100;
+            this.ViewY           = 100;
             this.ViewZoom        = 1.0f;
             this.ViewZoomCurrent = 1.0f;
 

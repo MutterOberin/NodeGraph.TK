@@ -28,8 +28,15 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            this.timer_redraw = new System.Windows.Forms.Timer(this.components);
             this.nodeGraphGL1 = new NodeGraph.TK.NodeGraphPanel();
             this.SuspendLayout();
+            // 
+            // timer_redraw
+            // 
+            this.timer_redraw.Interval = 50;
+            this.timer_redraw.Tick += new System.EventHandler(this.timer_redraw_Tick);
             // 
             // nodeGraphGL1
             // 
@@ -42,7 +49,7 @@
             this.nodeGraphGL1.Name = "nodeGraphGL1";
             this.nodeGraphGL1.Size = new System.Drawing.Size(800, 450);
             this.nodeGraphGL1.TabIndex = 0;
-            this.nodeGraphGL1.VSync = false;
+            this.nodeGraphGL1.VSync = true;
             // 
             // Form1
             // 
@@ -59,6 +66,7 @@
         #endregion
 
         private NodeGraphPanel nodeGraphGL1;
+        private System.Windows.Forms.Timer timer_redraw;
     }
 }
 
