@@ -8,10 +8,11 @@ This is a rewrite of the [NodeGraph](https://github.com/peeweek/NodeGraph) using
 All dependencies are using NuGet package manager.
 
 * [OpenTK](https://github.com/opentk/opentk) via NuGet
-* [QuickFont](https://github.com/opcon/QuickFont) via NuGet
+* ~~[QuickFont](https://github.com/opcon/QuickFont) via NuGet~~
 
 ### History
 
+* 2019-04-04: Some stuff done, purly experimental
 * 2019-02-12: Initial Commit
 
 ### Credits
