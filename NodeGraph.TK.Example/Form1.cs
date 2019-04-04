@@ -29,5 +29,10 @@ namespace NodeGraph.TK.Example
         {
             nodeGraphGL1.Invalidate();
         }
+
+        private void Btn_Node_Add_Click(object sender, EventArgs e)
+        {
+            nodeGraphGL1.Add_Node(new NodeGraphNode(64, 128, nodeGraphGL1.View));
+        }
     }
 }

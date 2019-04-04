@@ -34,6 +34,7 @@ using System.Windows.Forms;
 using System.Xml;
 
 using OpenTK;
+using OpenTK.Graphics.OpenGL;
 
 namespace NodeGraph.TK
 {
@@ -50,9 +51,8 @@ namespace NodeGraph.TK
 
         protected uint id;
 
-        protected Vector3 position;
-        protected float height;
-        protected float width;
+        protected Vector3 position; // X,Y = Position, Z currently unused
+        protected Vector2 property; // X,Y = Width, Height
 
         protected bool selected;
         protected bool selectable;
@@ -84,14 +84,20 @@ namespace NodeGraph.TK
             this.position.X = X;
             this.position.Y = Y;
             this.view       = view;
-            this.width      = 128;
-            this.height     = 64;
+            this.property.X = 128;
+            this.property.Y = 64;
             this.name       = "Test Void Node";
             this.selected   = false;
             this.selectable = selectable;
             this.comment    = "";
 
             this.connectors = new List<NodeGraphConnector>();
+
+            this.connectors.Add(new NodeGraphConnector("Connector 1", this, ConnectorType.Input, 0));
+            this.connectors.Add(new NodeGraphConnector("Connector 2", this, ConnectorType.Input, 1));
+
+            this.connectors.Add(new NodeGraphConnector("Connector 1", this, ConnectorType.Output, 0));
+            this.connectors.Add(new NodeGraphConnector("Connector 2", this, ConnectorType.Output, 1));
         }
 
         #endregion
@@ -182,10 +188,10 @@ namespace NodeGraph.TK
         [Category("Node Properties")]
         public float Width
         {
-            get { return this.width; }
+            get { return this.property.X; }
             set
             {
-                this.width = value;
+                this.property.X = value;
             }
         }
 
@@ -195,10 +201,10 @@ namespace NodeGraph.TK
         [Category("Node Properties")]
         public float Height
         {
-            get { return this.height; }
+            get { return this.property.Y; }
             set
             {
-                this.height = value;
+                this.property.Y = value;
             }
         }
 
@@ -307,6 +313,28 @@ namespace NodeGraph.TK
         /// <param name="e"></param>
         public virtual void Draw(PaintEventArgs e)
         {
+            GL.Color4(this.view.ColorNodeFill);
+
+            GL.Begin(PrimitiveType.Quads);
+
+            GL.Vertex3(this.position.X, position.Y, 0);
+            GL.Vertex3(this.position.X + property.X, position.Y, 0);
+            GL.Vertex3(this.position.X + property.X, position.Y + property.Y, 0);
+            GL.Vertex3(this.position.X, position.Y + property.Y, 0);
+
+            GL.End();
+
+            GL.Color4(this.view.ColorNodeOutline);
+
+            GL.Begin(PrimitiveType.LineLoop);
+
+            GL.Vertex3(this.position.X, position.Y, 0);
+            GL.Vertex3(this.position.X + property.X, position.Y, 0);
+            GL.Vertex3(this.position.X + property.X, position.Y + property.Y, 0);
+            GL.Vertex3(this.position.X, position.Y + property.Y, 0);
+
+            GL.End();
+
             //Vector2 CtrlPos = view.Panel.ViewToControl(new Vector2(x, y));
 
             //float ScaledX = CtrlPos.X;
@@ -320,10 +348,10 @@ namespace NodeGraph.TK
             // NODE SHADOW
             //if (this.ParentView.Panel.EnableShadow)
             //{
-                //e.Graphics.DrawImage(NodeGraphResources.NodeShadow, ParentView.Panel.ViewToControl(new Rectangle(this.x - (int)(0.1f * this.Width) + 4,
-                //                                                                                                       this.y - (int)(0.1f * this.Height) + 4,
-                //                                                                                                       this.Width + (int)(0.2f * this.Width) - 4,
-                //                                                                                                       this.Height + (int)(0.2f * this.Height) - 4)));
+            //e.Graphics.DrawImage(NodeGraphResources.NodeShadow, ParentView.Panel.ViewToControl(new Rectangle(this.x - (int)(0.1f * this.Width) + 4,
+            //                                                                                                       this.y - (int)(0.1f * this.Height) + 4,
+            //                                                                                                       this.Width + (int)(0.2f * this.Width) - 4,
+            //                                                                                                       this.Height + (int)(0.2f * this.Height) - 4)));
             //}
             //// NODE
             //if (!this.Selected)
