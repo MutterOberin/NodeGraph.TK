@@ -19,3 +19,9 @@ All dependencies are using NuGet package manager.
 ### Credits
 
 The original [NodeGraph](https://github.com/peeweek/NodeGraph) is developed by Thomas ICHÉ under MIT licence.
+
+### Current Screenshot
+
+![Image not available][CurrentStatus]
+
+[CurrentStatus]: https://github.com/MutterOberin/NodeGraph.TK/blob/develop/CurrentState.png "Current State"
