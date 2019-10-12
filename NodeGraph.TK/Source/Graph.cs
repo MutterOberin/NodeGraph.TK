@@ -32,26 +32,23 @@ using System.Windows.Forms;
 
 namespace NodeGraph.TK
 {
-    public class NodeGraphGraph
+    public class Graph
     {
         #region - Private Variables -
 
-        private string name;
-
-        private List<NodeGraphNode> nodes;
-        private List<NodeGraphNode> nodesSelected;
-        private List<NodeGraphLink> links;
+        private List<Node> nodes;
+        private List<Link> links;
 
         #endregion
 
         #region - Constructors -
 
-        public NodeGraphGraph(string name)
+        public Graph(string name)
         {
-            this.nodes         = new List<NodeGraphNode>();
-            this.nodesSelected = new List<NodeGraphNode>();
+            this.Name = name;
 
-            this.links         = new List<NodeGraphLink>();
+            this.nodes = new List<Node>();            
+            this.links = new List<Link>();
         }
 
         #endregion
@@ -59,25 +56,26 @@ namespace NodeGraph.TK
         #region - Properties -
 
         /// <summary>
-        /// The node Collection contained in this view
+        /// List of <see cref="Node"/> in this <see cref="Graph"/>
         /// </summary>
-        public List<NodeGraphNode> Nodes
+        public List<Node> Nodes
         {
             get { return this.nodes; }
-            set { this.nodes = value; }
         }
+
+        ///// <summary>
+        ///// List of <see cref="Node"/> in this <see cref="Graph"/> which are selected
+        ///// </summary>
+        //public List<Node> NodesSelected
+        //{
+        //    get { return this.nodesSelected; }
+        //    set { this.nodesSelected = value; }
+        //}
+
         /// <summary>
-        /// The collection of currently Selected nodes in this view
+        /// List of <see cref="Link"/> in this <see cref="Graph"/>
         /// </summary>
-        public List<NodeGraphNode> NodesSelected
-        {
-            get { return this.nodesSelected; }
-            set { this.nodesSelected = value; }
-        }
-        /// <summary>
-        /// The collection of Links created in this view
-        /// </summary>
-        public List<NodeGraphLink> Links
+        public List<Link> Links
         {
             get { return this.links; }
             set { this.links = value; }
@@ -86,7 +84,7 @@ namespace NodeGraph.TK
         /// <summary>
         /// Gets / Sets the Name of this Graph
         /// </summary>
-        public string Name { get => this.name; set => this.name = value; }
+        public string Name { get; set; }
 
         #endregion
 
@@ -95,18 +93,29 @@ namespace NodeGraph.TK
         /// <summary>
         /// Returns the Node Index of the NodeGraphNode in this graphs's collection
         /// </summary>
-        public int GetNodeIndex(NodeGraphNode node)
+        public int GetNodeIndex(Node node, bool selected)
         {
-            return this.nodes.FindIndex(x => x == node);
+            if (!selected)
+                return this.nodes.FindIndex(n => n == node);
+            else
+                return this.nodes.FindIndex(n => n == node && n.Selected);
         }
 
-        /// <summary>
-        /// Returns the Node Index of the NodeGraphNode in this graphs's current selection
-        /// </summary>
-        public int GetNodeIndexSelected(NodeGraphNode node)
+        public int GetNodeCount(bool selected)
         {
-            return this.nodesSelected.FindIndex(x => x == node);
+            if (!selected)
+                return this.nodes.Count;
+            else
+                return this.nodes.FindAll(n => n.Selected).Count;
         }
+
+        ///// <summary>
+        ///// Returns the Node Index of the NodeGraphNode in this graphs's current selection
+        ///// </summary>
+        //public int GetNodeIndexSelected(Node node)
+        //{
+        //    return this.nodesSelected.FindIndex(x => x == node);
+        //}
 
         #endregion
     }

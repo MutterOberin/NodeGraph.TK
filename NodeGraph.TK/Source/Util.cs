@@ -35,7 +35,7 @@ using OpenTK;
 
 namespace NodeGraph.TK
 {
-    public static class NodeGraphUtil
+    public static class Util
     {
         /// <summary>
         /// Clamps val to [min, max]

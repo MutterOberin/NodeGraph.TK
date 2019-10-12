@@ -25,31 +25,38 @@ Inspired by Project: https://github.com/peeweek/NodeGraph/tree/master/NodeGraphC
 */
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
+using OpenTK;
+using OpenTK.Graphics.OpenGL;
 
 namespace NodeGraph.TK
 {
     /// <summary>
-    /// Represents a link between two NodeGraphConnectors
+    /// Represents a Link between two Connectors
     /// </summary>
-    public class NodeGraphLink
+    public class Link
     {
         #region - Private Variables -
 
-        private NodeGraphConnector input;
-        private NodeGraphConnector output;
+        private Connector conn_0;
+        private Connector conn_1;
+
+        protected View view;
 
         #endregion
 
         #region - Constructor -
 
         /// <summary>
-        /// Creates a new NodeGraphLink, given input and output Connectors
+        /// Creates a new Link, given input and output Connector
         /// </summary>
-        public NodeGraphLink(NodeGraphConnector input, NodeGraphConnector output)
+        public Link(Connector input, Connector output, View view)
         {
-            this.input  = input;
-            this.output = output;
+            this.conn_0 = input;
+            this.conn_1 = output;
+
+            this.view = view;
         }
 
         #endregion
@@ -57,19 +64,46 @@ namespace NodeGraph.TK
         #region - Properties -
 
         /// <summary>
-        /// The first end of the link, that's connected to an Output Connector
+        /// The Input of this Link which is connected to an Connector of with Type Output
         /// </summary>
-        public NodeGraphConnector Input
-        {
-            get { return this.input; }
-        }
+        public Connector Input => this.conn_0;
 
         /// <summary>
-        /// The last end of the link, that's connected to an Input Connector
+        /// The Output of this Link which is connected to an Connector of with Type Input
         /// </summary>
-        public NodeGraphConnector Output
+        public Connector Output => this.conn_1;
+
+        /// <summary>
+        /// The View this Link is styled by
+        /// </summary>
+        public View View { get => this.view; set => this.view = value; }
+
+        #endregion
+
+        #region - Methods -
+
+        public virtual void Render()
         {
-            get { return this.output; }
+            RectangleF rect0 = conn_0.GetAreaHit();
+            RectangleF rect1 = conn_1.GetAreaHit();
+
+            Vector3 pos_0 = new Vector3(rect0.X + 0.5f * rect0.Width, rect0.Y + 0.5f * rect0.Height, 0);
+            Vector3 pos_1 = new Vector3(rect1.X + 0.5f * rect1.Width, rect1.Y + 0.5f * rect1.Height, 0); ;
+            Vector3 pos_2 = pos_0 + 0.5f * (pos_1 - pos_0);
+
+            if (conn_0.Parent.Selected || conn_1.Parent.Selected || conn_0.Parent.Hovered || conn_1.Parent.Hovered)
+                GL.Color4(view.ColorLinkSelected);
+            else
+                GL.Color4(view.ColorLink);
+
+            GL.Begin(PrimitiveType.LineStrip);
+
+            GL.Vertex3(pos_0.X, pos_0.Y, pos_0.Z);
+            GL.Vertex3(pos_2.X, pos_0.Y, pos_0.Z);
+            GL.Vertex3(pos_2.X, pos_1.Y, pos_0.Z);
+            GL.Vertex3(pos_1.X, pos_1.Y, pos_0.Z);
+
+            GL.End();
         }
 
         #endregion

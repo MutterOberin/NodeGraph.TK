@@ -5,7 +5,7 @@ using NodeGraph.TK;
 
 namespace NodeGraph.TK.Example
 {
-    public class NodeUser : NodeGraphNode
+    public class UserNode : Node
     {
         #region - Private Variables -
 
@@ -17,10 +17,10 @@ namespace NodeGraph.TK.Example
 
         #region - Constructors -
 
-        public NodeUser(float X, float Y, NodeGraphView view)
+        public UserNode(float X, float Y, View view)
             : base((int)X, (int)Y, view, true)
         {
-
+            base.color_fill = Util.ColorToVector4(Color.FromArgb(145, 128, 128));
         }
 
         #endregion

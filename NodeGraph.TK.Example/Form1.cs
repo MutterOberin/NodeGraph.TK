@@ -32,7 +32,15 @@ namespace NodeGraph.TK.Example
 
         private void Btn_Node_Add_Click(object sender, EventArgs e)
         {
-            nodeGraphGL1.Add_Node(new NodeGraphNode(64, 128, nodeGraphGL1.View));
+            nodeGraphGL1.Add_Node(new Node(64, 192, nodeGraphGL1.View));
+
+            panel1.Refresh();
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+            if (nodeGraphGL1.Graph.Nodes.Count > 0)
+                nodeGraphGL1.Graph.Nodes[0].UpdateTexture(e.Graphics);
         }
     }
 }
