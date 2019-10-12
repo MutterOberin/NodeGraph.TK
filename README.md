@@ -12,10 +12,10 @@ All dependencies are using NuGet package manager.
 
 ### History
 
+* 2019-10-13: Primitive Node and Link Rendering, Basic Interaction
 * 2019-04-04: Some stuff done, purly experimental
 * 2019-02-12: Initial Commit
 
 ### Credits
 
 The original [NodeGraph](https://github.com/peeweek/NodeGraph) is developed by Thomas ICHÉ under MIT licence.
-
