@@ -12,6 +12,7 @@ All dependencies are using NuGet package manager.
 
 ### History
 
+* 2019-10-14: Added Drag&Drop functionality
 * 2019-10-13: Primitive Node and Link Rendering, Basic Interaction
 * 2019-04-04: Some stuff done, purly experimental
 * 2019-02-12: Initial Commit
