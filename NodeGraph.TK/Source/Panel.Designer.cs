@@ -128,6 +128,7 @@
             // 
             // NodeGraphPanel
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.label8);
@@ -140,6 +141,10 @@
             this.Controls.Add(this.label1);
             this.Name = "NodeGraphPanel";
             this.Load += new System.EventHandler(this.NodeGraphPanel_Load);
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.NodeGraphPanel_DragDrop);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.NodeGraphPanel_DragEnter);
+            this.DragOver += new System.Windows.Forms.DragEventHandler(this.NodeGraphPanel_DragOver);
+            this.DragLeave += new System.EventHandler(this.NodeGraphPanel_DragLeave);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.NodeGraphPanel_Paint);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NodeGraphPanel_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.NodeGraphPanel_KeyUp);

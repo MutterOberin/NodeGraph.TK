@@ -94,7 +94,7 @@ namespace NodeGraph.TK
         private Vector4 selectionBox;
 
         private Vector3 mouse_position_ctrl;
-        private Vector3 mouse_position_view;
+        private Vector3 mouse_position_wrld;
 
         private Vector3 mouse_position_last;
 
@@ -113,6 +113,9 @@ namespace NodeGraph.TK
 
         private View view;
         private Graph graph;
+
+        private Link link_temp;
+        private Node node_temp;
 
         private Matrix4 projection;
 
@@ -133,6 +136,8 @@ namespace NodeGraph.TK
         {
             InitializeComponent();
 
+            this.MouseWheel += NodeGraphPanel_MouseWheel;
+
             //this.label1.Parent = this;
 
             this.graph = new Graph("Test");
@@ -146,7 +151,7 @@ namespace NodeGraph.TK
 
             this.editMode = NodeGraphEditMode.Idle;
 
-            this.mouse_position_view = Vector3.Zero;
+            this.mouse_position_wrld = Vector3.Zero;
             this.mouse_position_ctrl = Vector3.Zero;
 
             this.key_down_alt  = false;
@@ -239,7 +244,7 @@ namespace NodeGraph.TK
                 RectangleF rect_0 = this.link_input.GetAreaHit();
 
                 Vector3 pos_0 = new Vector3(rect_0.X + 0.5f * rect_0.Width, rect_0.Y + 0.5f * rect_0.Height, 0);
-                Vector3 pos_1 = this.mouse_position_view;
+                Vector3 pos_1 = this.mouse_position_wrld;
                 Vector3 pos_2 = pos_0 + 0.5f * (pos_1 - pos_0);
 
                 GL.Color4(Util.VectorToColor(this.view.ColorLinkEdit));
@@ -274,6 +279,12 @@ namespace NodeGraph.TK
 
                 }
             }
+        }
+
+        private void Render_Node_Edit()
+        {
+            if (this.node_temp != null)
+                this.node_temp.Render();
         }
 
         /// <summary>
@@ -372,23 +383,25 @@ namespace NodeGraph.TK
         /// <param name="e"></param>
         private void NodeGraphPanel_MouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            float newViewZoom;
-
             if (e.Delta != 0)
             {
-                newViewZoom = this.view.ViewZoom + ((float)e.Delta * 0.001f);
+                float newViewZoom = this.view.ViewZoom + ((float)e.Delta * 0.002f);
 
-                if (newViewZoom > 0.1f && newViewZoom < 2.0f)
+                if (newViewZoom > 0.1f && newViewZoom < 2.5f)
                     this.view.ViewZoom = newViewZoom;
+
+                this.Setup_Camera();
+
+                this.mouse_position_ctrl = new Vector3(e.Location.X, e.Location.Y, 0);
+
+                Util.Unproject(ref this.mouse_position_ctrl, out this.mouse_position_wrld);
 
             }
 
             if (this.editMode == NodeGraphEditMode.SelectingBox)
-            {
-                this.selectionBox_Current = this.ControlToView(new Vector3(e.Location.X, e.Location.Y, 0));
+            {                
+                this.selectionBox_Current = this.mouse_position_wrld;
             }
-
-            //UpdateFontSize();
 
             this.Invalidate();
         }
@@ -400,7 +413,7 @@ namespace NodeGraph.TK
         /// <param name="e"></param>
         private void NodeGraphPanel_MouseDown(object sender, MouseEventArgs e)
         {
-            Vector3 location = new Vector3(e.Location.X, e.Location.Y, 0);
+            this.mouse_position_ctrl = new Vector3(e.Location.X, e.Location.Y, 0);
 
             switch (this.editMode)
             {
@@ -410,13 +423,16 @@ namespace NodeGraph.TK
                         case MouseButtons.Middle:
 
                             this.editMode = NodeGraphEditMode.Scrolling;
-                            this.mouse_position_last = location;
+                            this.mouse_position_last = this.mouse_position_wrld;
+
+                            this.scroll_last.X = e.Location.X;
+                            this.scroll_last.Y = e.Location.Y;
 
                             break;
                         case MouseButtons.Left:
 
-                            var result1 = this.HitTestNodes(this.mouse_position_view);
-                            var result2 = this.HitTestNodes(this.mouse_position_view, true);
+                            var result1 = this.HitTestNodes(this.mouse_position_wrld);
+                            var result2 = this.HitTestNodes(this.mouse_position_wrld, true);
 
                             if (result1.Item1 == HitType.Connector)
                             {
@@ -436,15 +452,15 @@ namespace NodeGraph.TK
                             // Selection is not present => Move
                             else if (this.graph.GetNodeCount(true) == 0 && result1.Item1 == HitType.Node)
                             {
-                                //this.selectionBox_Current = this.ControlToView(location);
-                                //this.selectionBox_Origin = this.ControlToView(location);
+                                //this.selectionBox_Current = this.ControlToView(this.mouse_position_ctrl);
+                                //this.selectionBox_Origin = this.ControlToView(this.mouse_position_ctrl);
 
                                 //this.UpdateSelection();
                                 //this.TriggerEvents();
 
                                 this.editMode = NodeGraphEditMode.MovingSelection;
 
-                                this.mouse_position_last = this.mouse_position_view;
+                                this.mouse_position_last = this.mouse_position_wrld;
                             }
 
                             // Selection is present => Move Existing Selection Arround
@@ -452,15 +468,15 @@ namespace NodeGraph.TK
                             {
                                 this.editMode = NodeGraphEditMode.MovingSelection;
 
-                                this.mouse_position_last = this.mouse_position_view;
+                                this.mouse_position_last = this.mouse_position_wrld;
                             }
 
                             else
                             {
                                 this.editMode = NodeGraphEditMode.Selecting;
 
-                                this.selectionBox_Current = this.ControlToView(location);
-                                this.selectionBox_Origin = this.ControlToView(location);
+                                this.selectionBox_Current = Util.Unproject(ref this.mouse_position_ctrl);
+                                this.selectionBox_Origin  = Util.Unproject(ref this.mouse_position_ctrl);
                                 this.Selection_Update();
                                 this.Selection_Events();
 
@@ -524,7 +540,7 @@ namespace NodeGraph.TK
 
                 case NodeGraphEditMode.Linking:
 
-                    var result1 = this.HitTestNodes(this.mouse_position_view);
+                    var result1 = this.HitTestNodes(this.mouse_position_wrld);
 
                     if (result1.Item1 == HitType.Connector)
                     {
@@ -552,7 +568,7 @@ namespace NodeGraph.TK
         private void NodeGraphPanel_MouseMove(object sender, MouseEventArgs e)
         {
             this.mouse_position_ctrl = new Vector3(e.Location.X, e.Location.Y, 0);
-            this.mouse_position_view = this.ControlToView(mouse_position_ctrl);
+            this.mouse_position_wrld = Util.Unproject(ref this.mouse_position_ctrl);
 
             //if (e.Button == MouseButtons.Left)
             //    this.Invalidate();
@@ -564,12 +580,20 @@ namespace NodeGraph.TK
             {
                 case NodeGraphEditMode.Scrolling:
 
-                    this.view.ViewX -= (int)((e.Location.X - scroll_last.X) * this.view.ViewZoom);
-                    this.view.ViewY += (int)((e.Location.Y - scroll_last.Y) * this.view.ViewZoom);
+                    ////This is all in Control Space
+                    //this.view.ViewX -= (int)((this.mouse_position_wrld.X - this.mouse_position_last.X) * this.view.ViewZoom);
+                    //this.view.ViewY += (int)((this.mouse_position_wrld.Y - this.mouse_position_last.Y) * this.view.ViewZoom);
+
+                    //this.mouse_position_last = this.mouse_position_wrld;
+
+                    // This is all in Control Space
+                    this.view.ViewX -= (int)((e.Location.X - this.scroll_last.X) * this.view.ViewZoom);
+                    this.view.ViewY += (int)((e.Location.Y - this.scroll_last.Y) * this.view.ViewZoom);
 
                     this.scroll_last.X = e.Location.X;
                     this.scroll_last.Y = e.Location.Y;
-                    
+
+                    this.Invalidate();
 
                     break;
 
@@ -577,7 +601,7 @@ namespace NodeGraph.TK
 
                     this.editMode = NodeGraphEditMode.SelectingBox;
 
-                    this.selectionBox_Current = mouse_position_view;
+                    this.selectionBox_Current = this.mouse_position_wrld;
 
                     this.Selection_Update();
 
@@ -590,7 +614,7 @@ namespace NodeGraph.TK
                         this.UpdateScroll(new Vector2(e.Location.X, e.Location.Y));
                     }
 
-                    this.selectionBox_Current = mouse_position_view;
+                    this.selectionBox_Current = this.mouse_position_wrld;
 
                     this.Selection_Update();
 
@@ -603,11 +627,11 @@ namespace NodeGraph.TK
                         this.UpdateScroll(new Vector2(e.Location.X, e.Location.Y));
                     }
 
-                    Vector3 delta = this.mouse_position_view - mouse_position_last;
+                    Vector3 delta = this.mouse_position_wrld - this.mouse_position_last;
 
                     this.Selection_Move(delta);
                     
-                    this.mouse_position_last = mouse_position_view;
+                    this.mouse_position_last = this.mouse_position_wrld;
 
                     this.Refresh();
 
@@ -626,7 +650,7 @@ namespace NodeGraph.TK
 
                     foreach (Node node in this.graph.Nodes)
                     {
-                        if (node.HitTest(this.mouse_position_view, out HitType hitType, out Connector connector))
+                        if (node.HitTest(this.mouse_position_wrld, out HitType hitType, out Connector connector))
                         {
                             node.Hovered = true;
                         }   
@@ -673,24 +697,6 @@ namespace NodeGraph.TK
 
             if (!e.Control)
                 key_down_ctrl = false;
-        }
-
-        /*
-         *  Utilities
-         * 
-         */
-        /// <summary>
-        /// Converts Control Space to View Space (Point)
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        public Vector3 ControlToView(Vector3 point)
-        {
-            //return new Vector3((int)((point.X - (this.Width / 2)) * this.view.ViewZoom) + this.view.ViewX,
-            //                   (int)((point.Y - (this.Height / 2)) * this.view.ViewZoom) - this.view.ViewY, 0);
-
-            return new Vector3(point.X, this.Height - point.Y, 0);
-
         }
 
         /// <summary>
@@ -1059,13 +1065,13 @@ namespace NodeGraph.TK
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadIdentity();
 
-            Matrix4 lookAt = Matrix4.LookAt(this.ClientSize.Width / 2, this.ClientSize.Height / 2, 1,
-                                            this.ClientSize.Width / 2, this.ClientSize.Height / 2, 0,
-                                            0, 1, 0);
-
-            //Matrix4 lookAt = Matrix4.LookAt(this.view.ViewX, this.view.ViewY, 1,
-            //                                this.view.ViewX, this.view.ViewY, 0,
+            //Matrix4 lookAt = Matrix4.LookAt(this.ClientSize.Width / 2, this.ClientSize.Height / 2, 1,
+            //                                this.ClientSize.Width / 2, this.ClientSize.Height / 2, 0,
             //                                0, 1, 0);
+
+            Matrix4 lookAt = Matrix4.LookAt(this.view.ViewX, this.view.ViewY, 1,
+                                            this.view.ViewX, this.view.ViewY, 0,
+                                            0, 1, 0);
 
             GL.MultMatrix(ref lookAt);
         }
@@ -1145,47 +1151,61 @@ namespace NodeGraph.TK
 
         private void Render_Debug()
         {
-            GL.Color3(Color.Aquamarine);
+            GL.Color3(Color.LightSkyBlue);
 
             GL.PointSize(3);
 
             GL.Begin(PrimitiveType.Points);
 
-            GL.Vertex3(this.mouse_position_view.X, this.mouse_position_view.Y, 0);
+            GL.Vertex3(this.mouse_position_wrld.X, this.mouse_position_wrld.Y, 0);
 
             GL.End();
 
-            GL.Begin(PrimitiveType.Points);
+            //GL.Begin(PrimitiveType.Points);
 
-            GL.Vertex3(64, 64, 0);
+            //GL.Vertex3(64, 64, 0);
 
-            GL.End();
+            //GL.End();
 
             GL.PointSize(1);
         }
 
         private void Render_Debug_RefreshTick()
         {
-            GL.Color3(Color.Aquamarine);
+            GL.Color3(Color.LightSkyBlue);
+
+            Vector3 pos_screen1 = Vector3.Zero;
+            Vector3 pos_screen2 = Vector3.Zero;
+            Vector3 pos_worlds1 = Vector3.Zero;
+            Vector3 pos_worlds2 = Vector3.Zero;
+
+            pos_screen1.X = this.ClientSize.Width  - 75;
+            pos_screen1.Y = this.ClientSize.Height - 20;
+
+            pos_screen2.X = this.ClientSize.Width  -  5;
+            pos_screen2.Y = this.ClientSize.Height -  5;
+
+            Util.Unproject(ref pos_screen1, out pos_worlds1);
+            Util.Unproject(ref pos_screen2, out pos_worlds2);
 
             GL.Begin(PrimitiveType.LineLoop);
 
-            GL.Vertex3( 0, 2, 0);
-            GL.Vertex3(64, 2, 0);
-            GL.Vertex3(64, 8, 0);
-            GL.Vertex3( 0, 8, 0);
+            GL.Vertex3(pos_worlds1.X, pos_worlds1.Y, 0);
+            GL.Vertex3(pos_worlds1.X, pos_worlds2.Y, 0);
+            GL.Vertex3(pos_worlds2.X, pos_worlds2.Y, 0);
+            GL.Vertex3(pos_worlds2.X, pos_worlds1.Y, 0);
 
             GL.End();
 
             GL.Begin(PrimitiveType.Lines);
 
-            GL.Vertex3(0 + gl_tick, 2, 0);
-            GL.Vertex3(0 + gl_tick, 8, 0);
+            GL.Vertex3(pos_worlds1.X + this.gl_tick / 100.0f * (pos_worlds2.X - pos_worlds1.X), pos_worlds1.Y, 0);
+            GL.Vertex3(pos_worlds1.X + this.gl_tick / 100.0f * (pos_worlds2.X - pos_worlds1.X), pos_worlds2.Y, 0);
 
             GL.End();
 
             this.gl_tick++;
-            this.gl_tick = this.gl_tick % 64;
+            this.gl_tick = this.gl_tick % 100;
         }
 
         private void NodeGraphPanel_Load(object sender, EventArgs e)
@@ -1230,6 +1250,7 @@ namespace NodeGraph.TK
             }
 
             Render_Link_Edit();
+            Render_Node_Edit();
 
             //// Smooth Behavior
             //if (this.m_bSmoothBehavior)
@@ -1290,7 +1311,7 @@ namespace NodeGraph.TK
             this.Render_Debug_RefreshTick();
 
             label1.Text = $"MousePosition Ctrl: {this.mouse_position_ctrl.X}, {this.mouse_position_ctrl.Y}";
-            label2.Text = $"MousePosition View: {this.mouse_position_view.X}, {this.mouse_position_view.Y}";
+            label2.Text = $"MousePosition View: {this.mouse_position_wrld.X}, {this.mouse_position_wrld.Y}";
 
 
             label3.Text = $"Edit Mode: {this.editMode.ToString()}";
@@ -1298,20 +1319,20 @@ namespace NodeGraph.TK
             label5.Text = $"ViewY: {this.view.ViewY.ToString()}";
             label6.Text = $"ViewZoom: {this.view.ViewZoom.ToString()}";
 
-            label7.Text = $"ViewSpace Cursor Location: {this.mouse_position_view.X.ToString()} : {this.mouse_position_view.Y.ToString()}";
+            label7.Text = $"ViewSpace Cursor Location: {this.mouse_position_wrld.X.ToString()} : {this.mouse_position_wrld.Y.ToString()}";
             label8.Text = $"AltPressed: {this.key_down_alt.ToString()}";
 
             // BELOW: DEBUG ELEMENTS
 
-            GL.Color3(Color.Aquamarine);
+            GL.Color3(Color.LightSkyBlue);
 
             GL.Begin(PrimitiveType.Lines);
 
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(this.view.Grid_Padding, 0, 0);
+            GL.Vertex3(-1 * this.view.Grid_Padding, 0, 0);
+            GL.Vertex3(+1 * this.view.Grid_Padding, 0, 0);
 
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(0, this.view.Grid_Padding, 0);
+            GL.Vertex3(0, -1 * this.view.Grid_Padding, 0);
+            GL.Vertex3(0, +1 * this.view.Grid_Padding, 0);
 
             GL.End();
 
@@ -1332,7 +1353,73 @@ namespace NodeGraph.TK
             this.Invalidate();
         }
 
+        #region - - Drag & Drop - -
+
+        private void NodeGraphPanel_DragEnter(object sender, DragEventArgs e)
+        {
+            // Enter Panel Area: Create Temporary Node
+
+            Point p = (sender as NodeGraphPanel).PointToClient(new Point(e.X, e.Y));
+
+            this.mouse_position_ctrl.X = p.X;
+            this.mouse_position_ctrl.Y = p.Y;
+
+            Util.Unproject(ref this.mouse_position_ctrl, out this.mouse_position_wrld);
+
+            if (e.Data.GetDataPresent(DataFormats.StringFormat))
+            {
+                e.Effect = DragDropEffects.Copy;
+
+                this.node_temp = new Node(0, 0, this.view);
+
+                node_temp.X = this.mouse_position_wrld.X - node_temp.Width / 2.0f;
+                node_temp.Y = this.mouse_position_wrld.Y - node_temp.Height / 2.0f;
+            }
+        }
+
+        private void NodeGraphPanel_DragLeave(object sender, EventArgs e)
+        {
+            // Leave Panel Area: Delete Temporary Node
+
+            this.node_temp = null;
+        }
+
+        private void NodeGraphPanel_DragOver(object sender, DragEventArgs e)
+        {
+            // Move during DragDrop: Move Temporary Node + Refresh
+
+            Point p = (sender as NodeGraphPanel).PointToClient(new Point(e.X, e.Y));
+
+            this.mouse_position_ctrl.X = p.X;
+            this.mouse_position_ctrl.Y = p.Y;
+
+            Util.Unproject(ref this.mouse_position_ctrl, out this.mouse_position_wrld);
+
+            if (e.Data.GetDataPresent(DataFormats.StringFormat))
+            {
+                this.node_temp.X = this.mouse_position_wrld.X - this.node_temp.Width / 2.0f;
+                this.node_temp.Y = this.mouse_position_wrld.Y - this.node_temp.Height / 2.0f;
+            }
+
+            this.Invalidate();
+        }
+
+        private void NodeGraphPanel_DragDrop(object sender, DragEventArgs e)
+        {
+            // Drop to final Position
+
+            if (e.Data.GetDataPresent(DataFormats.StringFormat))
+            {
+                this.Add_Node(this.node_temp);
+
+                this.node_temp = null;             
+            }
+        }
+
+        #endregion 
+
         #endregion
+
     }
 
     #region DELEGATES / EVENTARGS

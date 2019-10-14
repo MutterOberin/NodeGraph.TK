@@ -140,13 +140,13 @@ namespace NodeGraph.TK
         /// The orthographic X coordinate of the current View
         /// </summary>
         [Category("NodeGraph View")]
-        public int ViewX { get => (int)this.viewProp.X; set => this.viewProp.X = value; }
+        public float ViewX { get => this.viewProp.X; set => this.viewProp.X = value; }
 
         /// <summary>
         /// The orthographic Y coordinate of the current View
         /// </summary>
         [Category("NodeGraph View")]
-        public int ViewY { get => (int)this.viewProp.Y; set => this.viewProp.Y = value; }
+        public float ViewY { get => this.viewProp.Y; set => this.viewProp.Y = value; }
 
         /// <summary>
         /// The zoom factor of the current view

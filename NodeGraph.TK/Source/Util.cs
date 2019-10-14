@@ -32,6 +32,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using OpenTK;
+using OpenTK.Graphics.OpenGL;
 
 namespace NodeGraph.TK
 {
@@ -97,6 +98,62 @@ namespace NodeGraph.TK
                                   (int)(Clamp(color.X) * 255),
                                   (int)(Clamp(color.Y) * 255),
                                   (int)(Clamp(color.Z) * 255));
+        }
+
+        /// <summary>
+        /// Unproject Point on Near- and FarClipPlane to World Space
+        /// </summary>
+        public static Vector3 Unproject(ref Vector3 pos_screen)
+        {
+            Matrix4 pr;
+            Matrix4 mv;
+
+            int[] vport = new int[4];
+
+            GL.GetInteger(GetPName.Viewport, vport);
+
+            GL.GetFloat(GetPName.ModelviewMatrix, out mv);
+            GL.GetFloat(GetPName.ProjectionMatrix, out pr);
+
+            Vector4 output;
+
+            output.X = 2.0f * (pos_screen.X - vport[0]) / (float)vport[2] - 1;
+            output.Y = -(2.0f * (pos_screen.Y - vport[1]) / (float)vport[3] - 1);
+            output.Z = 2 * pos_screen.Z - 1;
+            output.W = 1.0f;
+
+            Matrix4 mvInv = Matrix4.Identity;
+            Matrix4 prInv = Matrix4.Identity;
+
+            try
+            {
+                mvInv = Matrix4.Invert(mv);
+                prInv = Matrix4.Invert(pr);
+            }
+            catch (Exception)
+            {
+
+            }
+
+            Vector4.Transform(ref output, ref prInv, out output);
+            Vector4.Transform(ref output, ref mvInv, out output);
+
+            if (output.W > float.Epsilon || output.W < float.Epsilon)
+            {
+                output.X /= output.W;
+                output.Y /= output.W;
+                output.Z /= output.W;
+            }
+
+            return output.Xyz;
+        }
+
+        /// <summary>
+        /// Unproject Point on Near- and FarClipPlane to World Space
+        /// </summary>
+        public static void Unproject(ref Vector3 pos_screen, out Vector3 pos_world)
+        {
+            pos_world = Unproject(ref pos_screen);
         }
     }
 }

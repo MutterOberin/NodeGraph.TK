@@ -80,14 +80,14 @@ namespace NodeGraph.TK
 
             this.position.X = X;
             this.position.Y = Y;
-            this.view = view;
+            this.view       = view;
             this.property.X = 192;
             this.property.Y = 64;
-            this.name = "DI: Dummy";
-            this.hovered = false;
-            this.selected = false;
+            this.name       = "DI: Dummy";
+            this.hovered    = false;
+            this.selected   = false;
             this.selectable = selectable;
-            this.comment = "";
+            this.comment    = "";
 
             this.color_fill = new Vector4(0.56f, 0.50f, 0.50f, 1.0f);
 
