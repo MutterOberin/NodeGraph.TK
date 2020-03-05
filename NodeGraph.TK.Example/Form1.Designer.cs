@@ -32,12 +32,12 @@
             this.timer_redraw = new System.Windows.Forms.Timer(this.components);
             this.Btn_Node_Add = new System.Windows.Forms.Button();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.nodeGraphGL1 = new NodeGraph.TK.NodeGraphPanel();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.nodeGraphGL1 = new NodeGraph.TK.NodeGraphPanel();
+            this.TxtBx_Filter = new System.Windows.Forms.TextBox();
+            this.LstBx_Items = new System.Windows.Forms.ListBox();
             this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
-            this.listBox1 = new System.Windows.Forms.ListBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -88,6 +88,20 @@
             this.splitContainer1.SplitterDistance = 850;
             this.splitContainer1.TabIndex = 2;
             // 
+            // nodeGraphGL1
+            // 
+            this.nodeGraphGL1.AllowDrop = true;
+            this.nodeGraphGL1.BackColor = System.Drawing.Color.Black;
+            this.nodeGraphGL1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.nodeGraphGL1.EnableDrawDebug = true;
+            this.nodeGraphGL1.EnableShadow = false;
+            this.nodeGraphGL1.EnableSmooth = false;
+            this.nodeGraphGL1.Location = new System.Drawing.Point(0, 0);
+            this.nodeGraphGL1.Name = "nodeGraphGL1";
+            this.nodeGraphGL1.Size = new System.Drawing.Size(850, 700);
+            this.nodeGraphGL1.TabIndex = 0;
+            this.nodeGraphGL1.VSync = true;
+            // 
             // splitContainer2
             // 
             this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -109,8 +123,8 @@
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.panel1.Controls.Add(this.textBox1);
-            this.panel1.Controls.Add(this.listBox1);
+            this.panel1.Controls.Add(this.TxtBx_Filter);
+            this.panel1.Controls.Add(this.LstBx_Items);
             this.panel1.Controls.Add(this.Btn_Node_Add);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 0);
@@ -119,18 +133,32 @@
             this.panel1.TabIndex = 0;
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
             // 
-            // nodeGraphGL1
+            // TxtBx_Filter
             // 
-            this.nodeGraphGL1.BackColor = System.Drawing.Color.Black;
-            this.nodeGraphGL1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.nodeGraphGL1.EnableDrawDebug = true;
-            this.nodeGraphGL1.EnableShadow = false;
-            this.nodeGraphGL1.EnableSmooth = false;
-            this.nodeGraphGL1.Location = new System.Drawing.Point(0, 0);
-            this.nodeGraphGL1.Name = "nodeGraphGL1";
-            this.nodeGraphGL1.Size = new System.Drawing.Size(850, 700);
-            this.nodeGraphGL1.TabIndex = 0;
-            this.nodeGraphGL1.VSync = true;
+            this.TxtBx_Filter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(47)))), ((int)(((byte)(47)))), ((int)(((byte)(48)))));
+            this.TxtBx_Filter.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.TxtBx_Filter.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TxtBx_Filter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(231)))), ((int)(((byte)(231)))));
+            this.TxtBx_Filter.Location = new System.Drawing.Point(3, 96);
+            this.TxtBx_Filter.Name = "TxtBx_Filter";
+            this.TxtBx_Filter.Size = new System.Drawing.Size(168, 16);
+            this.TxtBx_Filter.TabIndex = 4;
+            this.TxtBx_Filter.TextChanged += new System.EventHandler(this.TxtBx_Filter_TextChanged);
+            // 
+            // LstBx_Items
+            // 
+            this.LstBx_Items.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(47)))), ((int)(((byte)(47)))), ((int)(((byte)(48)))));
+            this.LstBx_Items.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.LstBx_Items.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LstBx_Items.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(231)))), ((int)(((byte)(231)))));
+            this.LstBx_Items.FormattingEnabled = true;
+            this.LstBx_Items.ItemHeight = 16;
+            this.LstBx_Items.Location = new System.Drawing.Point(3, 118);
+            this.LstBx_Items.Name = "LstBx_Items";
+            this.LstBx_Items.Size = new System.Drawing.Size(168, 144);
+            this.LstBx_Items.TabIndex = 2;
+            this.LstBx_Items.SelectedIndexChanged += new System.EventHandler(this.LstBx_Items_SelectedIndexChanged);
+            this.LstBx_Items.MouseDown += new System.Windows.Forms.MouseEventHandler(this.LstBx_Items_MouseDown);
             // 
             // propertyGrid1
             // 
@@ -157,33 +185,6 @@
             this.propertyGrid1.ViewBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.propertyGrid1.ViewBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(95)))), ((int)(((byte)(95)))), ((int)(((byte)(95)))));
             this.propertyGrid1.ViewForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(231)))), ((int)(((byte)(231)))));
-            // 
-            // listBox1
-            // 
-            this.listBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(47)))), ((int)(((byte)(47)))), ((int)(((byte)(48)))));
-            this.listBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.listBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(231)))), ((int)(((byte)(231)))));
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.ItemHeight = 16;
-            this.listBox1.Location = new System.Drawing.Point(3, 118);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(168, 144);
-            this.listBox1.TabIndex = 2;
-            this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
-            this.listBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listBox1_MouseDown);
-            // 
-            // textBox1
-            // 
-            this.textBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(47)))), ((int)(((byte)(47)))), ((int)(((byte)(48)))));
-            this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(231)))), ((int)(((byte)(231)))));
-            this.textBox1.Location = new System.Drawing.Point(3, 96);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(168, 16);
-            this.textBox1.TabIndex = 4;
-            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // Form1
             // 
@@ -216,8 +217,8 @@
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.PropertyGrid propertyGrid1;
-        private System.Windows.Forms.ListBox listBox1;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.ListBox LstBx_Items;
+        private System.Windows.Forms.TextBox TxtBx_Filter;
     }
 }
 

@@ -12,7 +12,7 @@ namespace NodeGraph.TK.Example
 {
     public partial class Form1 : Form
     {
-        public List<string> test;
+        public List<string> items;
 
         public Form1()
         {
@@ -26,17 +26,17 @@ namespace NodeGraph.TK.Example
 
             this.timer_redraw.Enabled = true;
 
-            this.test = new List<string>();
+            this.items = new List<string>();
 
-            this.test.Add("DI Item1 2D");
-            this.test.Add("DI Item1 3D");
-            this.test.Add("DI Item2 2D");
+            this.items.Add("DI Item1 2D");
+            this.items.Add("DI Item1 3D");
+            this.items.Add("DI Item2 2D");
 
-            this.test.Add("OI Item 2D");
-            this.test.Add("OI Item 3D");
-            this.test.Add("OI Item 4D");
+            this.items.Add("OI Item 2D");
+            this.items.Add("OI Item 3D");
+            this.items.Add("OI Item 4D");
 
-            listBox1.Items.AddRange(this.test.ToArray());
+            LstBx_Items.Items.AddRange(this.items.ToArray());
         }
 
         private void timer_redraw_Tick(object sender, EventArgs e)
@@ -46,13 +46,13 @@ namespace NodeGraph.TK.Example
 
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
-            if (nodeGraphGL1.Graph.Nodes.Count > 0)
-                nodeGraphGL1.Graph.Nodes[0].UpdateTexture(e.Graphics);
+            //if (nodeGraphGL1.Graph.Nodes.Count > 0)
+            //    nodeGraphGL1.Graph.Nodes[0].Render_Update_Texture(e.Graphics);
         }
          
         private void Btn_Node_Add_Click(object sender, EventArgs e)
         {
-            nodeGraphGL1.Add_Node(new Node(64, 192, nodeGraphGL1.View));
+            nodeGraphGL1.Add_Node(new Node(64, 192, nodeGraphGL1.View, nodeGraphGL1.ShaderProgramNodes));
 
             panel1.Refresh();
         }
@@ -68,19 +68,19 @@ namespace NodeGraph.TK.Example
             // From here any form which has AllowDrop = true, DragEnter, DragDrop events
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        private void TxtBx_Filter_TextChanged(object sender, EventArgs e)
         {
-            listBox1.Items.Clear();
+            LstBx_Items.Items.Clear();
 
-            listBox1.Items.AddRange(this.test.FindAll(n => n.ToLower().Contains(textBox1.Text.ToLower())).ToArray()); 
+            LstBx_Items.Items.AddRange(this.items.FindAll(n => n.ToLower().Contains(TxtBx_Filter.Text.ToLower())).ToArray()); 
         }
 
-        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void LstBx_Items_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
 
-        private void listBox1_MouseDown(object sender, MouseEventArgs e)
+        private void LstBx_Items_MouseDown(object sender, MouseEventArgs e)
         {
             ListBox box = sender as ListBox;
 

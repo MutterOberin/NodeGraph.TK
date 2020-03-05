@@ -30,18 +30,19 @@ using System.ComponentModel;
 using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Drawing.Imaging;
 
 using System.Xml;
 
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+
 using NodeGraphTK.Source;
-using System.Drawing.Imaging;
 
 namespace NodeGraph.TK
 {
     /// <summary>
-    /// Represents a base node for use in a NodeGraphView
+    /// Represents a Base <see cref="NodeGraph.TK.Node"/> for use in a <see cref="NodeGraph.TK.View"/>
     /// </summary>
     public class Node
     {
@@ -53,7 +54,9 @@ namespace NodeGraph.TK
 
         protected Vector4 color_fill;
 
-        protected Vector3 position; // X,Y = Position, Z currently unused
+        protected Matrix4 tMatrix;
+
+        //protected Vector3 position; // X,Y = Position, Z currently unused
         protected Vector2 property; // X,Y = Width, Height
 
         protected bool hovered;
@@ -67,6 +70,19 @@ namespace NodeGraph.TK
 
         protected List<Connector> connectors;
 
+        protected Bitmap texture;
+
+        protected int program;
+
+        protected uint id_tex;
+
+        protected float[] attrib_0;
+        protected float[] attrib_1;
+        
+        protected uint VAO_1;        
+        protected uint VBO_ATTRIB_0;
+        protected uint VBO_ATTRIB_1;
+        
         #endregion
 
         #region - Constructor -
@@ -74,16 +90,18 @@ namespace NodeGraph.TK
         /// <summary>
         /// Creates a new <see cref="Node"/> into the <see cref="Graph"/>, given coordinates and ability to be selected
         /// </summary>
-        public Node(float X, float Y, View view, bool selectable = true)
+        public Node(float X, float Y, View view, int shader, bool selectable = true)
         {
             this.id = count; count++;
 
-            this.position.X = X;
-            this.position.Y = Y;
+            this.X = X;
+            this.Y = Y;
+            this.W = 192;
+            this.H = 64;
+
             this.view       = view;
-            this.property.X = 192;
-            this.property.Y = 64;
             this.name       = "DI: Dummy";
+            this.program    = shader;
             this.hovered    = false;
             this.selected   = false;
             this.selectable = selectable;
@@ -98,6 +116,17 @@ namespace NodeGraph.TK
 
             this.connectors.Add(new Connector("Connector 1", this, ConnectorType.Output, 0));
             this.connectors.Add(new Connector("Connector 2", this, ConnectorType.Output, 1));
+
+            this.tMatrix = Matrix4.Identity;
+
+            this.RenderSetup();
+
+            this.texture = new Bitmap((int)this.W, (int)this.H);
+
+            this.RenderUpdateTexture(Graphics.FromImage(this.texture));
+
+
+            //this.texture.Save(@"C:\6_Projects\Projects_FlowVis\Flow.GUI.Data\_export\bild.png");
         }
 
         #endregion
@@ -153,9 +182,12 @@ namespace NodeGraph.TK
         [Category("Node Properties")]
         public Vector3 Position
         {
-            get => this.position;
-            set => this.position = value;
+            get => this.tMatrix.Row3.Xyz;
+            set => this.tMatrix.Row3 = new Vector4(value, 1.0f);
         }
+
+        [Category("Node Properties")]
+        protected Matrix4 TMatrix { get => this.tMatrix; set => this.tMatrix = value; }
 
         /// <summary>
         /// Properties (Width, Height)
@@ -173,8 +205,8 @@ namespace NodeGraph.TK
         [Category("Node Properties")]
         public float X
         {
-            get => this.position.X;
-            set => this.position.X = value;
+            get => this.tMatrix.M41;
+            set => this.tMatrix.M41 = value;
         }
 
         /// <summary>
@@ -183,15 +215,15 @@ namespace NodeGraph.TK
         [Category("Node Properties")]
         public float Y
         {
-            get => this.position.Y;
-            set => this.position.Y = value;
+            get => this.tMatrix.M42;
+            set => this.tMatrix.M42 = value;
         }
 
         /// <summary>
         /// Width (ViewSpace) of the node
         /// </summary>
         [Category("Node Properties")]
-        public float Width
+        public float W
         {
             get => this.property.X;
             set => this.property.X = value;
@@ -201,7 +233,7 @@ namespace NodeGraph.TK
         /// Height (ViewSpace) of the node
         /// </summary>
         [Category("Node Properties")]
-        public float Height
+        public float H
         {
             get => this.property.Y;
             set => this.property.Y = value;
@@ -241,7 +273,7 @@ namespace NodeGraph.TK
         #region - Methods -
 
         /// <summary>
-        /// Returns the name of the node: can be overriden to match custom names.
+        /// Returns the Name of the Node. Override for Custom Names.
         /// </summary>
         protected virtual string GetName()
         {
@@ -250,7 +282,7 @@ namespace NodeGraph.TK
 
         public virtual RectangleF GetArea()
         {
-            return new RectangleF(this.position.X, this.position.Y, this.property.X, this.property.Y);
+            return new RectangleF(this.X, this.Y, this.W, this.H);
         }
 
         /// <summary>
@@ -259,7 +291,7 @@ namespace NodeGraph.TK
         public virtual RectangleF GetAreaHit()
         {
             // Hit Zone Bleeding can be done here
-            return new RectangleF(this.position.X, this.position.Y, this.property.X, this.property.Y);
+            return new RectangleF(this.X, this.Y, this.W, this.H);
         }
 
         /// <summary>
@@ -291,7 +323,7 @@ namespace NodeGraph.TK
         /// <summary>
         /// Gets the Maximal Connector Count
         /// </summary>
-        public int GetConnectorCount_Max()
+        public int GetConnectorCountMax()
         {
             return Math.Max(GetConnectorCount(ConnectorType.Input), GetConnectorCount(ConnectorType.Output));
         }
@@ -299,7 +331,7 @@ namespace NodeGraph.TK
         /// <summary>
         /// Gets the Maximal Connector Count
         /// </summary>
-        public int GetConnectorCount_Min()
+        public int GetConnectorCountMin()
         {
             return Math.Min(GetConnectorCount(ConnectorType.Input), GetConnectorCount(ConnectorType.Output));
         }
@@ -364,63 +396,75 @@ namespace NodeGraph.TK
                 else
                     GL.Color4(this.color_fill);
             }
+            
+            GL.PushMatrix();
+            {
+                GL.MultMatrix(ref this.tMatrix);
 
-            GL.Begin(PrimitiveType.Quads);
+                //GL.BindTexture(TextureTarget.Texture1D, base.tex_ID_CS);
 
-            GL.Vertex3(position.X, position.Y, position.Z);
-            GL.Vertex3(position.X + property.X, position.Y, position.Z);
-            GL.Vertex3(position.X + property.X, position.Y + property.Y, position.Z);
-            GL.Vertex3(position.X, position.Y + property.Y, position.Z);
+                GL.BindVertexArray(this.VAO_1);
 
-            GL.End();
+                GL.DrawArrays(PrimitiveType.Quads, 0, 4);
+
+                GL.BindVertexArray(0);
+
+                //GL.BindTexture(TextureTarget.Texture1D, 0);
+            }
+            GL.PopMatrix();
+        }
+
+        public virtual void RenderSetup()
+        {
+            Vector3[] attrib_0 = new Vector3[4];
+            Vector3[] attrib_1 = new Vector3[4];
+
+            float w = property.X;
+            float h = property.Y;
+
+            attrib_0[0] = new Vector3(0, 0, 0);
+            attrib_0[1] = new Vector3(w, 0, 0);
+            attrib_0[2] = new Vector3(w, h, 0);
+            attrib_0[3] = new Vector3(0, h, 0);
+
+            attrib_1[0] = new Vector3(0, 0, 0);
+            attrib_1[1] = new Vector3(1, 0, 0);
+            attrib_1[2] = new Vector3(1, 1, 0);
+            attrib_1[3] = new Vector3(0, 1, 0);
+
+            GL.DeleteVertexArrays(1, ref this.VAO_1);
+            GL.DeleteBuffers(1, ref this.VBO_ATTRIB_0);
+            GL.DeleteBuffers(1, ref this.VBO_ATTRIB_1);
+
+            // Buffer Generate
+            Node.CreateVBO3(ref attrib_0, ref this.VBO_ATTRIB_0, 0);
+            Node.CreateVBO3(ref attrib_1, ref this.VBO_ATTRIB_1, 1);
         }
 
         /// <summary>
         /// Updates the Texture used during Node Draw
         /// </summary>
-        public virtual void UpdateTexture(Graphics g)
+        public virtual void RenderUpdateTexture(Graphics g)
         {
-            //GL.Color4(this.view.ColorNodeFill);
-
-            //GL.Begin(PrimitiveType.Quads);
-
-            //GL.Vertex3(this.position.X, position.Y, 0);
-            //GL.Vertex3(this.position.X + property.X, position.Y, 0);
-            //GL.Vertex3(this.position.X + property.X, position.Y + property.Y, 0);
-            //GL.Vertex3(this.position.X, position.Y + property.Y, 0);
-
-            //GL.End();
-
-            //GL.Color4(this.view.ColorNodeOutline);
-
-            //GL.Begin(PrimitiveType.LineLoop);
-
-            //GL.Vertex3(this.position.X, position.Y, 0);
-            //GL.Vertex3(this.position.X + property.X, position.Y, 0);
-            //GL.Vertex3(this.position.X + property.X, position.Y + property.Y, 0);
-            //GL.Vertex3(this.position.X, position.Y + property.Y, 0);
-
-            //GL.End();
-
             float zoom = 1.0f;
 
             bool shadow = false;
 
-            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
 
             //Vector2 CtrlPos = view.Panel.ViewToControl(new Vector2(x, y));
 
             //float ScaledX = CtrlPos.X;
             //float ScaledY = CtrlPos.Y;
 
-            Rectangle ViewRectangle = new Rectangle(0, 0, (int)(this.Width * zoom), (int)(this.Height * zoom));
+            Rectangle ViewRectangle = new Rectangle(0, 0, (int)(this.W * zoom), (int)(this.H * zoom));
 
             // Node Shadow
             if (shadow)
             {
-                g.DrawImage(Resources.NodeShadow, new Rectangle(8 - (int)(0.1f * this.Width), 8 - (int)(0.1f * this.Height), 
-                    (int)this.Width + (int)(0.2f * this.Width), (int)this.Height + (int)(0.2f * this.Height)));
+                g.DrawImage(Resources.NodeShadow, new Rectangle(8 - (int)(0.1f * this.W), 8 - (int)(0.1f * this.H), 
+                    (int)this.W + (int)(0.2f * this.W), (int)this.H + (int)(0.2f * this.H)));
             }
             
             // Node Todo: change how selection works
@@ -444,6 +488,7 @@ namespace NodeGraph.TK
             {                
                 //g.DrawString(this.Name, new Font(view.Font_Node_Title.Name, view.Font_Node_Title.Size * zoom), new SolidBrush(Util.VectorToColor(view.ColorNodeTextShadow)), 
                 //    new Point(ViewRectangle.X + (int)(2.0f * zoom) + 1, ViewRectangle.Y + (int)(2.0f * zoom) + 1));
+
                 g.DrawString(this.Name, new Font(view.Font_Node_Title.Name, view.Font_Node_Title.Size * zoom), new SolidBrush(Util.VectorToColor(view.ColorNodeText)), 
                     new Point(ViewRectangle.X + (int)(2.0f * zoom) + 0, ViewRectangle.Y + (int)(2.0f * zoom) + 3));
             }
@@ -464,6 +509,116 @@ namespace NodeGraph.TK
         public override string ToString()
         {
             return GetName();
+        }
+
+        #endregion
+
+        #region - Methods Static -
+
+        /// <summary>
+        /// Creates Buffer and Uploads Data to GPU. Used for Setup Methods
+        /// </summary>
+        /// <param name="array">Data as float array (x,y,z)</param>
+        /// <param name="buffer">Buffer, will be generated</param>
+        /// <param name="index">Attrib Index</param>
+        protected static void CreateVBO3(ref Vector3[] array, ref uint buffer, int index)
+        {
+            if (array == null || array.Length == 0)
+                return;
+
+            GL.GenBuffers(1, out buffer);
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, buffer);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(array.Length * Vector3.SizeInBytes), array, BufferUsageHint.StaticDraw);
+
+            GL.VertexAttribPointer(index, 3, VertexAttribPointerType.Float, false, 0, 0);
+
+            GL.EnableVertexAttribArray(index);
+        }
+
+        /// <summary>
+        /// Gets the Pixel of the Current Bitmap
+        /// </summary>
+        protected static IntPtr GetBitmapPixels(ref Bitmap bitmap)
+        {
+            BitmapData data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height),
+                ImageLockMode.ReadOnly, bitmap.PixelFormat);
+
+            bitmap.UnlockBits(data);
+
+            return data.Scan0;
+        }
+
+        /// <summary>
+        /// Upload Bitmap Texture
+        /// </summary>
+        protected static void UploadTextureBitmap(ref uint texID, ref Bitmap texture)
+        {
+            GL.DeleteTextures(1, ref texID);
+
+            GL.GenTextures(1, out texID);
+
+            GL.BindTexture(TextureTarget.Texture2D, texID);
+
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
+
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);   // X
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);   // Y
+
+            if (texture != null)
+            {
+                if (texture.PixelFormat == System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
+                {
+                    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.R8, texture.Width, texture.Height, 0,
+                        OpenTK.Graphics.OpenGL.PixelFormat.Red, PixelType.UnsignedByte, Node.GetBitmapPixels(ref texture));
+                }
+
+                if (texture.PixelFormat == System.Drawing.Imaging.PixelFormat.Format24bppRgb)
+                {
+                    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgb, texture.Width, texture.Height, 0,
+                        OpenTK.Graphics.OpenGL.PixelFormat.Bgr, PixelType.UnsignedByte, Node.GetBitmapPixels(ref texture));
+                }
+
+                if (texture.PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb)
+                {
+                    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, texture.Width, texture.Height, 0,
+                        OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, Node.GetBitmapPixels(ref texture));
+                }
+            }
+
+            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+
+            GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Replace);
+
+            GL.BindTexture(TextureTarget.Texture2D, 0);
+        }
+
+        public static void CompileShader(ref int program)
+        {
+            int svert = GL.CreateShader(ShaderType.VertexShader);
+            int sfrag = GL.CreateShader(ShaderType.FragmentShader);
+
+            string svertsource = "";
+            string sfragsource = "";
+
+            // Set source and compile
+            GL.ShaderSource(svert, svertsource);
+            GL.ShaderSource(sfrag, sfragsource);
+
+            GL.CompileShader(svert);
+            GL.CompileShader(sfrag);
+
+            // Delete Shader Program (if exists)
+            GL.DeleteProgram(program);
+
+            // Create Shader Program
+            program = GL.CreateProgram();
+
+            GL.AttachShader(program, svert);
+            GL.AttachShader(program, sfrag);
+
+            GL.LinkProgram(program);
         }
 
         #endregion

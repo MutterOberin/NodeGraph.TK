@@ -114,8 +114,11 @@ namespace NodeGraph.TK
         private View view;
         private Graph graph;
 
-        private Link link_temp;
-        private Node node_temp;
+        private Link tempLink;
+        private Node tempNode;
+
+        private int shaderNodes;
+        private int shaderLinks;
 
         private Matrix4 projection;
 
@@ -140,7 +143,7 @@ namespace NodeGraph.TK
 
             //this.label1.Parent = this;
 
-            this.graph = new Graph("Test");
+            this.graph = new Graph("Default");
             this.view  = new View(graph);
 
             this.Dock = DockStyle.Fill;
@@ -168,6 +171,8 @@ namespace NodeGraph.TK
             this.enable_debug  = true;
             this.enable_shadow = true;
             this.enable_smooth = false;
+
+            Node.CompileShader(ref this.shaderNodes);
         }
 
         #endregion
@@ -206,6 +211,12 @@ namespace NodeGraph.TK
             get { return this.enable_smooth; }
             set { this.enable_smooth = value; }
         }
+
+        [Category("NodeGraph Panel")]
+        public int ShaderProgramNodes { get => this.shaderNodes; set => this.shaderNodes = value; }
+
+        [Category("NodeGraph Panel")]
+        public int ShaderProgramLinks { get => this.shaderLinks; set => this.shaderLinks = value; }
 
         #endregion
 
@@ -283,8 +294,8 @@ namespace NodeGraph.TK
 
         private void Render_Node_Edit()
         {
-            if (this.node_temp != null)
-                this.node_temp.Render();
+            if (this.tempNode != null)
+                this.tempNode.Render();
         }
 
         /// <summary>
@@ -1370,10 +1381,10 @@ namespace NodeGraph.TK
             {
                 e.Effect = DragDropEffects.Copy;
 
-                this.node_temp = new Node(0, 0, this.view);
+                this.tempNode = new Node(0, 0, this.view, this.shaderNodes);
 
-                node_temp.X = this.mouse_position_wrld.X - node_temp.Width / 2.0f;
-                node_temp.Y = this.mouse_position_wrld.Y - node_temp.Height / 2.0f;
+                tempNode.X = this.mouse_position_wrld.X - tempNode.W / 2.0f;
+                tempNode.Y = this.mouse_position_wrld.Y - tempNode.H / 2.0f;
             }
         }
 
@@ -1381,7 +1392,7 @@ namespace NodeGraph.TK
         {
             // Leave Panel Area: Delete Temporary Node
 
-            this.node_temp = null;
+            this.tempNode = null;
         }
 
         private void NodeGraphPanel_DragOver(object sender, DragEventArgs e)
@@ -1397,8 +1408,8 @@ namespace NodeGraph.TK
 
             if (e.Data.GetDataPresent(DataFormats.StringFormat))
             {
-                this.node_temp.X = this.mouse_position_wrld.X - this.node_temp.Width / 2.0f;
-                this.node_temp.Y = this.mouse_position_wrld.Y - this.node_temp.Height / 2.0f;
+                this.tempNode.X = this.mouse_position_wrld.X - this.tempNode.W / 2.0f;
+                this.tempNode.Y = this.mouse_position_wrld.Y - this.tempNode.H / 2.0f;
             }
 
             this.Invalidate();
@@ -1410,9 +1421,9 @@ namespace NodeGraph.TK
 
             if (e.Data.GetDataPresent(DataFormats.StringFormat))
             {
-                this.Add_Node(this.node_temp);
+                this.Add_Node(this.tempNode);
 
-                this.node_temp = null;             
+                this.tempNode = null;             
             }
         }
 
