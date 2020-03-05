@@ -73,6 +73,9 @@ namespace NodeGraph.TK
         protected Bitmap texture;
 
         protected int program;
+        protected int loc_pr;
+        protected int loc_mv;
+        protected int loc_t0;
 
         protected uint id_tex;
 
@@ -125,6 +128,11 @@ namespace NodeGraph.TK
 
             this.RenderUpdateTexture(Graphics.FromImage(this.texture));
 
+            UploadTextureBitmap(ref this.id_tex, ref this.texture);
+
+            this.loc_pr = GL.GetUniformLocation(this.program, "MatrixPr");
+            this.loc_mv = GL.GetUniformLocation(this.program, "MatrixMV");
+            this.loc_t0 = GL.GetUniformLocation(this.program, "Texture");
 
             //this.texture.Save(@"C:\6_Projects\Projects_FlowVis\Flow.GUI.Data\_export\bild.png");
         }
@@ -401,7 +409,18 @@ namespace NodeGraph.TK
             {
                 GL.MultMatrix(ref this.tMatrix);
 
-                //GL.BindTexture(TextureTarget.Texture1D, base.tex_ID_CS);
+                GL.BindTexture(TextureTarget.Texture2D, this.id_tex);
+
+                GL.UseProgram(this.program);
+
+                GL.GetFloat(GetPName.ModelviewMatrix,  out Matrix4 mv);
+                GL.GetFloat(GetPName.ProjectionMatrix, out Matrix4 pr);
+                
+                // Upload Matrix
+                GL.UniformMatrix4(this.loc_mv, false, ref mv);
+                GL.UniformMatrix4(this.loc_pr, false, ref pr);
+
+                GL.Uniform1(this.loc_t0, 0);
 
                 GL.BindVertexArray(this.VAO_1);
 
@@ -409,7 +428,9 @@ namespace NodeGraph.TK
 
                 GL.BindVertexArray(0);
 
-                //GL.BindTexture(TextureTarget.Texture1D, 0);
+                GL.UseProgram(0);
+
+                GL.BindTexture(TextureTarget.Texture2D, 0);
             }
             GL.PopMatrix();
         }
@@ -427,10 +448,10 @@ namespace NodeGraph.TK
             attrib_0[2] = new Vector3(w, h, 0);
             attrib_0[3] = new Vector3(0, h, 0);
 
-            attrib_1[0] = new Vector3(0, 0, 0);
-            attrib_1[1] = new Vector3(1, 0, 0);
-            attrib_1[2] = new Vector3(1, 1, 0);
-            attrib_1[3] = new Vector3(0, 1, 0);
+            attrib_1[0] = new Vector3(0, 1, 0);
+            attrib_1[1] = new Vector3(1, 1, 0);
+            attrib_1[2] = new Vector3(1, 0, 0);
+            attrib_1[3] = new Vector3(0, 0, 0);
 
             GL.DeleteVertexArrays(1, ref this.VAO_1);
             GL.DeleteBuffers(1, ref this.VBO_ATTRIB_0);
@@ -599,8 +620,34 @@ namespace NodeGraph.TK
             int svert = GL.CreateShader(ShaderType.VertexShader);
             int sfrag = GL.CreateShader(ShaderType.FragmentShader);
 
-            string svertsource = "";
-            string sfragsource = "";
+            string svertsource = "#version 330  \n" +
+                "in layout(location = 0) vec3 in_Position; \n" +
+                "in layout(location = 1) vec3 in_TexCoords; \n" +
+                "out VS_OUT \n" +
+                "{ \n" +
+                "   vec3 TC; \n" +
+                "} vs_out; \n" +
+                " \n" +
+                "uniform mat4 MatrixPr; \n" +
+                "uniform mat4 MatrixMV; \n" +
+                "void main() \n" +
+                "{ \n" +
+                "   vs_out.TC = in_TexCoords; \n" +
+                "   gl_Position = MatrixPr * MatrixMV * vec4(in_Position, 1); \n" +
+                "}";
+            
+            string sfragsource = "#version 330  \n" +
+                "in VS_OUT \n" +
+                "{ \n" +
+                "   vec3 TC; \n" +
+                "} fs_in; \n" +
+                "out vec4 frag_color; \n" +
+                "uniform sampler2D Texture; \n" +
+                "void main() \n" +
+                "{ \n" +
+                "   //frag_color = vec4(fs_in.TC.x, fs_in.TC.y, 0.0, 1.0); \n" +
+                "   frag_color = texture(Texture, fs_in.TC.xy); \n" +
+                "}";
 
             // Set source and compile
             GL.ShaderSource(svert, svertsource);
@@ -608,6 +655,9 @@ namespace NodeGraph.TK
 
             GL.CompileShader(svert);
             GL.CompileShader(sfrag);
+
+            GL.GetShaderInfoLog(svert, out string svertinfo);
+            GL.GetShaderInfoLog(sfrag, out string sfraginfo);
 
             // Delete Shader Program (if exists)
             GL.DeleteProgram(program);

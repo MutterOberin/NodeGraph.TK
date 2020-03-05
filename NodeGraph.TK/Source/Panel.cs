@@ -171,8 +171,6 @@ namespace NodeGraph.TK
             this.enable_debug  = true;
             this.enable_shadow = true;
             this.enable_smooth = false;
-
-            Node.CompileShader(ref this.shaderNodes);
         }
 
         #endregion
@@ -1036,6 +1034,8 @@ namespace NodeGraph.TK
             GL.Enable(EnableCap.Blend);
             //GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
+            Node.CompileShader(ref this.shaderNodes);
 
             this.gl_loaded = true;
         }

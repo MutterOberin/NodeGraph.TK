@@ -17,8 +17,8 @@ namespace NodeGraph.TK.Example
 
         #region - Constructors -
 
-        public UserNode(float X, float Y, View view)
-            : base((int)X, (int)Y, view, true)
+        public UserNode(float X, float Y, View view, int shader)
+            : base((int)X, (int)Y, view, shader, true)
         {
             base.color_fill = Util.ColorToVector4(Color.FromArgb(145, 128, 128));
         }
