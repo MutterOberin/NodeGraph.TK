@@ -76,16 +76,11 @@ namespace NodeGraph.TK
     {
         #region - Private Variables -
 
-        private string name;
+        private float scale;
 
-        private Node node;
-
-        private int connectorIndex;
-
-        private bool linked;
-
-        private ConnectorType connectorType;
-        private ConnectorData connectorData;
+        private Pen pen;
+        private Font font;
+        private Brush brush;
 
         private Vector4 color;
 
@@ -108,16 +103,21 @@ namespace NodeGraph.TK
             bool success = Enum.TryParse(newName, out newConnectorData);
 
             if (!success)
-                Console.WriteLine($"## ERROR: Casting {newName} to Enum failed");
+                Console.WriteLine($"## ERROR:\t\tCasting {newName} to Enum failed");
 
-            this.color          = new Vector4(0, 0, 0, 1);
+            this.color = new Vector4(0, 0, 0, 1);
 
-            this.name           = newName;
-            this.node           = newParent;
-            this.connectorType  = newConnectorType;
-            this.connectorData  = newConnectorData;
-            this.connectorIndex = newConnectorIndex;
+            this.Name   = newName;
+            this.Parent = newParent;
+            this.Type   = newConnectorType;
+            this.Data   = newConnectorData;
+            this.Index  = newConnectorIndex;
 
+            this.scale = newParent.Tex_Scale;
+
+            this.pen   = new Pen(Util.VectorToColor(this.color), 1.0f);
+            this.font  = new Font(this.Parent.View.Font_Node_Connector.Name, this.Parent.View.Font_Node_Connector.Size * this.scale);
+            this.brush = new SolidBrush(Util.VectorToColor(this.color));
         }
 
         /// <summary>
@@ -129,14 +129,19 @@ namespace NodeGraph.TK
         /// <param name="newConnectorIndex">Connector Index</param>
         public Connector(string newName, Node newParent, ConnectorType newConnectorType, ConnectorData newConnectorData, int newConnectorIndex)
         {
-            this.color          = new Vector4(0, 0, 0, 1);
+            this.color = new Vector4(0, 0, 0, 1);
 
-            this.name           = newName;
-            this.node           = newParent;
-            this.connectorType  = newConnectorType;
-            this.connectorData  = newConnectorData;
-            this.connectorIndex = newConnectorIndex;
+            this.Name   = newName;
+            this.Parent = newParent;
+            this.Type   = newConnectorType;
+            this.Data   = newConnectorData;
+            this.Index  = newConnectorIndex;
 
+            this.scale = newParent.Tex_Scale;
+
+            this.pen = new Pen(Util.VectorToColor(this.color), 1.0f);
+            this.font = new Font(this.Parent.View.Font_Node_Connector.Name, this.Parent.View.Font_Node_Connector.Size * this.scale);
+            this.brush = new SolidBrush(Util.VectorToColor(this.color));
         }
 
         #endregion
@@ -146,12 +151,12 @@ namespace NodeGraph.TK
         /// <summary>
         /// Index of the Connector
         /// </summary>
-        public int Index => this.connectorIndex;
+        public int Index { get; }
 
         /// <summary>
         /// Name of the Connector that will be displayed
         /// </summary>
-        public string Name => this.name;
+        public string Name { get; }
 
         /// <summary>
         /// Gets / Sets Connectors Color
@@ -165,23 +170,19 @@ namespace NodeGraph.TK
         /// <summary>
         /// The parent node that contains the Connector
         /// </summary>
-        public Node Parent => this.node;
+        public Node Parent { get; }
 
         /// <summary>
         /// Type of the Connector (input/output)
         /// </summary>
-        public ConnectorType Type => this.connectorType;
+        public ConnectorType Type { get; }
 
         /// <summary>
         /// Data of the Connector
         /// </summary>
-        public ConnectorData Data => this.connectorData;
+        public ConnectorData Data { get; }
 
-        public bool Linked
-        {
-            get => this.linked;
-            set => this.linked = value;
-        }
+        public bool Linked { get; set; }
 
         #endregion
 
@@ -194,19 +195,19 @@ namespace NodeGraph.TK
         {
             Vector2 pos = Vector2.Zero;
 
-            switch (this.connectorType)
+            switch (this.Type)
             {
                 case ConnectorType.Input:
                     {
                         pos.X = 0;
-                        pos.Y = this.Parent.View.SizeNodeHeader + 6 + (this.connectorIndex * 16);
+                        pos.Y = this.Parent.View.SizeNodeHeader * this.scale + 6 * this.scale + (this.Index * 16 * this.scale);
                     }
                     break;
 
                 case ConnectorType.Output:
                     {
-                        pos.X = this.Parent.HitRectangle.Width - 12;
-                        pos.Y = this.Parent.View.SizeNodeHeader + 6 + (this.connectorIndex * 16);
+                        pos.X = this.Parent.HitRectangle.Width * this.scale - 12 * this.scale;
+                        pos.Y = this.Parent.View.SizeNodeHeader * this.scale + 6 * this.scale + (this.Index * 16 * this.scale);
                     }
                     break;
 
@@ -214,7 +215,7 @@ namespace NodeGraph.TK
                     break;
             }
             
-            return new RectangleF(pos.X, pos.Y, 12, 8);
+            return new RectangleF(pos.X, pos.Y, 12 * scale, 8 * scale);
         }
 
         /// <summary>
@@ -226,19 +227,19 @@ namespace NodeGraph.TK
 
             Vector2 pos = Vector2.Zero;
 
-            switch (this.connectorType)
+            switch (this.Type)
             {
                 case ConnectorType.Input:
                     {
                         pos.X = this.Parent.X;
-                        pos.Y = this.Parent.Y + this.Parent.HitRectangle.Height - this.Parent.View.SizeNodeHeader - 10 - (this.connectorIndex * 16);
+                        pos.Y = this.Parent.Y + this.Parent.HitRectangle.Height * this.scale - this.Parent.View.SizeNodeHeader * this.scale - 10 * this.scale - (this.Index * 16 * this.scale);
                     }
                     break;
 
                 case ConnectorType.Output:
                     {
-                        pos.X = this.Parent.X + this.Parent.HitRectangle.Width - 12;
-                        pos.Y = this.Parent.Y + this.Parent.View.SizeNodeHeader + 6 + (this.connectorIndex * 16);
+                        pos.X = this.Parent.X + this.Parent.HitRectangle.Width * this.scale - 12 * this.scale;
+                        pos.Y = this.Parent.Y + this.Parent.View.SizeNodeHeader * this.scale + 6 * this.scale + (this.Index * 16 * this.scale);
                     }
                     break;
 
@@ -246,7 +247,7 @@ namespace NodeGraph.TK
                     break;
             }
             
-            return new RectangleF(pos.X - 2, pos.Y - 2, 16, 12);
+            return new RectangleF(pos.X - 2, pos.Y - 2, 12 * this.scale + 4, 8 * this.scale + 4);
         }
 
         /// <summary>
@@ -256,21 +257,21 @@ namespace NodeGraph.TK
         {
             Vector2 pos = Vector2.Zero;
 
-            switch (this.connectorType)
+            switch (this.Type)
             {
                 case ConnectorType.Input:
                     {
-                        pos.X = 16;
-                        pos.Y = this.Parent.View.SizeNodeHeader + 5 + (this.connectorIndex * 16);
+                        pos.X = 16 * this.scale;
+                        pos.Y = this.Parent.View.SizeNodeHeader * this.scale + 5 * this.scale + (this.Index * 16 * this.scale);
                     }
                     break;
 
                 case ConnectorType.Output:
                     {
-                        SizeF measure = g.MeasureString(this.Name, this.Parent.View.Font_Node_Connector_Scaled);
+                        SizeF measure = g.MeasureString(this.Name, this.font);
 
-                        pos.X = this.Parent.HitRectangle.Width - 15 - measure.Width;
-                        pos.Y = this.Parent.View.SizeNodeHeader + 5 + (this.connectorIndex * 16);                  
+                        pos.X = this.Parent.HitRectangle.Width * this.scale - 15 * this.scale - measure.Width;
+                        pos.Y = this.Parent.View.SizeNodeHeader * this.scale + 5 * this.scale + (this.Index * 16 * this.scale);                  
                     }
                     break;
 
@@ -285,22 +286,21 @@ namespace NodeGraph.TK
         /// <summary>
         /// Draws the connector
         /// </summary>
-        public void Draw(Graphics g, float zoom)
+        public void Draw(Graphics g)
         {
-            if (zoom < this.Parent.View.Node_Connector_Text_TH)
+            if (this.Parent.View.ViewZoomCurrent < this.Parent.View.Node_Connector_Text_TH)
                 return;
 
-            RectangleF rect = this.GetArea();
+            RectangleF r0 = this.GetArea();
+            RectangleF r1 = this.GetAreaHit();
 
-            Brush brush = new SolidBrush(Util.VectorToColor(this.color));
-            Pen   pen   = new Pen(brush, 1.0f);
-
-            g.FillRectangle(brush, rect);
-            g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height); // Someone at MS forgot to write the RectangleF overload :-D
+            g.FillRectangle(brush, r0);
+            g.DrawRectangle(pen, r0.X, r0.Y, r0.Width, r0.Height); // Someone at MS forgot to write the RectangleF overload :-D
+            g.DrawRectangle(new Pen(Color.LightSkyBlue), r1.X, r1.Y, r1.Width, r1.Height); // Someone at MS forgot to write the RectangleF overload :-D
 
             Vector2 pos = GetTextPosition(g);
 
-            g.DrawString(this.Name, this.Parent.View.Font_Node_Connector_Scaled, brush, pos.X, pos.Y);            
+            g.DrawString(this.Name, this.font, brush, pos.X, pos.Y);            
         }
 
         #endregion

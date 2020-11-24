@@ -71,13 +71,13 @@ namespace NodeGraph.TK
         protected List<Connector> connectors;
 
         protected Bitmap texture;
-
         protected int program;
         protected int loc_pr;
         protected int loc_mv;
         protected int loc_t0;
+        protected int loc_st;
 
-        protected uint id_tex;
+        protected uint tex_id;
 
         protected float[] attrib_0;
         protected float[] attrib_1;
@@ -102,6 +102,8 @@ namespace NodeGraph.TK
             this.W = 192;
             this.H = 64;
 
+            this.Tex_Scale = 4.0f;
+
             this.view       = view;
             this.name       = "DI: Dummy";
             this.program    = shader;
@@ -124,15 +126,16 @@ namespace NodeGraph.TK
 
             this.RenderSetup();
 
-            this.texture = new Bitmap(4 * (int)this.W, 4 * (int)this.H);
+            this.texture = new Bitmap((int)(this.Tex_Scale * this.W), (int)(this.Tex_Scale * this.H));
 
             this.RenderUpdateTexture(Graphics.FromImage(this.texture));
 
-            UploadTextureBitmap(ref this.id_tex, ref this.texture);
+            UploadTextureBitmap(ref this.tex_id, ref this.texture);
 
             this.loc_pr = GL.GetUniformLocation(this.program, "MatrixPr");
             this.loc_mv = GL.GetUniformLocation(this.program, "MatrixMV");
             this.loc_t0 = GL.GetUniformLocation(this.program, "Texture");
+            this.loc_st = GL.GetUniformLocation(this.program, "State");
 
             //this.texture.Save(@"C:\6_Projects\Projects_FlowVis\Flow.GUI.Data\_export\bild.png");
         }
@@ -275,6 +278,12 @@ namespace NodeGraph.TK
             set => this.comment = value;
         }
 
+        /// <summary>
+        /// Internal Scaling of rendered Node Texture
+        /// </summary>
+        [Category("Node Properties")]
+        public float Tex_Scale { get; set; }
+
 
         #endregion
 
@@ -390,26 +399,16 @@ namespace NodeGraph.TK
 
         public virtual void Render()
         {
-            if (this.selected)
-            {
-                if (this.hovered)
-                    GL.Color4(Util.VectorToColor(view.ColorNodeFillHovered));
-                else
-                    GL.Color4(Util.VectorToColor(view.ColorNodeFillSelected));
-            }
-            else
-            {
-                if (this.hovered)
-                    GL.Color4(Util.VectorToColor(view.ColorNodeFillHovered));
-                else
-                    GL.Color4(this.color_fill);
-            }
+            int hs = 0;
+
+            if (this.selected) hs = 1;
+            if (this.hovered)  hs = 2;            
             
             GL.PushMatrix();
             {
                 GL.MultMatrix(ref this.tMatrix);
 
-                GL.BindTexture(TextureTarget.Texture2D, this.id_tex);
+                GL.BindTexture(TextureTarget.Texture2D, this.tex_id);
 
                 GL.UseProgram(this.program);
 
@@ -420,7 +419,9 @@ namespace NodeGraph.TK
                 GL.UniformMatrix4(this.loc_mv, false, ref mv);
                 GL.UniformMatrix4(this.loc_pr, false, ref pr);
 
+                // Loc t0 = texture -> 0, hs = Hovered / Selected -> 0, 1, 2
                 GL.Uniform1(this.loc_t0, 0);
+                GL.Uniform1(this.loc_st, hs);
 
                 GL.BindVertexArray(this.VAO_1);
 
@@ -467,8 +468,6 @@ namespace NodeGraph.TK
         /// </summary>
         public virtual void RenderUpdateTexture(Graphics g)
         {
-            float zoom = 4.0f;
-
             bool shadow = false;
 
             g.SmoothingMode      = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
@@ -479,32 +478,36 @@ namespace NodeGraph.TK
             //float ScaledX = CtrlPos.X;
             //float ScaledY = CtrlPos.Y;
 
-            Rectangle ViewRectangle = new Rectangle(0, 0, (int)(this.W * zoom), (int)(this.H * zoom));
+            RectangleF ViewRectangle = new RectangleF(0.0f, 0.0f, this.W * Tex_Scale, this.H * Tex_Scale);
 
             // Node Shadow
             if (shadow)
             {
-                g.DrawImage(Resources.NodeShadow, new Rectangle(8 - (int)(0.1f * this.W), 8 - (int)(0.1f * this.H), 
-                    (int)this.W + (int)(0.2f * this.W), (int)this.H + (int)(0.2f * this.H)));
+                g.DrawImage(Resources.NodeShadow, new Rectangle(8 - (int)(0.1f * this.W * Tex_Scale), 8 - (int)(0.1f * this.H * Tex_Scale), 
+                    (int)(this.W * Tex_Scale) + (int)(0.2f * this.W * Tex_Scale), (int)(this.H * Tex_Scale) + (int)(0.2f * this.H * Tex_Scale)));
             }
-            
 
-            g.FillRectangle(new SolidBrush(this.NodeFillColor), ViewRectangle);
-                
-            g.FillRectangle(new SolidBrush(Util.VectorToColor(view.ColorNodeHeader)), new Rectangle(ViewRectangle.X, ViewRectangle.Y, ViewRectangle.Width, (int)(view.SizeNodeHeader * zoom)));
-            g.DrawRectangle(new Pen(Util.VectorToColor(view.ColorNodeOutline), 1.0f), ViewRectangle);
+            
+            //g.FillRectangle(new SolidBrush(this.NodeFillColor), ViewRectangle);
+            //g.FillRectangle(Brushes.Transparent, ViewRectangle);
+
+            g.FillRectangle(new SolidBrush(Util.VectorToColor(view.ColorNodeHeader)), ViewRectangle.X, ViewRectangle.Y, ViewRectangle.Width, view.SizeNodeHeader * Tex_Scale);
+            g.DrawRectangle(new Pen(Util.VectorToColor(view.ColorNodeOutline), Tex_Scale), ViewRectangle.X, ViewRectangle.Y, ViewRectangle.Width, ViewRectangle.Height);
            
             // Node Text
             //g.DrawString(this.Name, new Font(view.Font_Node_Title.Name, view.Font_Node_Title.Size * zoom), new SolidBrush(Util.VectorToColor(view.ColorNodeTextShadow)), 
             //    new Point(ViewRectangle.X + (int)(2.0f * zoom) + 1, ViewRectangle.Y + (int)(2.0f * zoom) + 1));
 
-            g.DrawString(this.Name, new Font(view.Font_Node_Title.Name, view.Font_Node_Title.Size * zoom), new SolidBrush(Util.VectorToColor(view.ColorNodeText)), 
-                new Point(ViewRectangle.X + (int)(2.0f * zoom) + 0, ViewRectangle.Y + (int)(2.0f * zoom) + 3));
+            g.DrawString(this.Name, new Font(view.Font_Node_Title.Name, view.Font_Node_Title.Size * Tex_Scale), new SolidBrush(Util.VectorToColor(view.ColorNodeText)), 
+                ViewRectangle.X + 2.0f * Tex_Scale + 0, ViewRectangle.Y + (int)(2.0f * Tex_Scale) + 3);
+
+            // Debug - Hit Rectange
+            //g.DrawRectangle(new Pen(Color.DarkBlue, 1.0f), this.HitRectangle.X, this.HitRectangle.Y, this.HitRectangle.Width, this.HitRectangle.Height);
 
             // Connectors Input
             for (int i = 0; i < this.connectors.Count; i++)
             {
-                this.connectors[i].Draw(g, zoom);
+                this.connectors[i].Draw(g);
             }
 
             // Comment
@@ -568,12 +571,6 @@ namespace NodeGraph.TK
 
             GL.BindTexture(TextureTarget.Texture2D, texID);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
-
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);   // X
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);   // Y
-
             if (texture != null)
             {
                 if (texture.PixelFormat == System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
@@ -596,6 +593,12 @@ namespace NodeGraph.TK
             }
 
             GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.NearestMipmapLinear);
+
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);   // X
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);   // Y
 
             GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Replace);
 
@@ -630,11 +633,24 @@ namespace NodeGraph.TK
                 "} fs_in; \n" +
                 "out vec4 frag_color; \n" +
                 "uniform sampler2D Texture; \n" +
+                "uniform int State; \n" +
+                "vec4 BlendBackToFront(vec4 result, vec4 color) \n" +
+                "{ \n" +
+                "result.rgb = (color.a) * color.rgb + (1.0 - color.a) * result.rgb;" +
+                "result.a   = (color.a) * result.a + (1.0 - color.a) * result.a;" +
+                "return result;" +
+                "}" +
                 "void main() \n" +
                 "{ \n" +
+                "   vec4 c0 = vec4(0.560, 0.500, 0.500, 1.0); \n" +
+                "   vec4 c1 = vec4(0.627, 0.501, 0.391, 1.0); \n" +
+                "   vec4 c2 = vec4(0.725, 0.580, 0.470, 1.0); \n" +
+                "   vec4 base = c0; \n" +
+                "   if (State == 1) base = c1; \n" +
+                "   if (State == 2) base = c2; \n" +
                 "   //frag_color = vec4(fs_in.TC.x, fs_in.TC.y, 0.0, 1.0); \n" +
-                "   frag_color = texture(Texture, fs_in.TC.xy); \n" +
-                "}";
+                "   frag_color = BlendBackToFront(base, texture(Texture, fs_in.TC.xy)); \n" +
+            "}";
 
             // Set source and compile
             GL.ShaderSource(svert, svertsource);
