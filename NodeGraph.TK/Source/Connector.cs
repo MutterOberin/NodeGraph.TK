@@ -231,7 +231,7 @@ namespace NodeGraph.TK
                 case ConnectorType.Input:
                     {
                         pos.X = this.Parent.X;
-                        pos.Y = this.Parent.Y + this.Parent.View.SizeNodeHeader + 6 + (this.connectorIndex * 16);
+                        pos.Y = this.Parent.Y + this.Parent.HitRectangle.Height - this.Parent.View.SizeNodeHeader - 10 - (this.connectorIndex * 16);
                     }
                     break;
 

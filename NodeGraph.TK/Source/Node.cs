@@ -124,7 +124,7 @@ namespace NodeGraph.TK
 
             this.RenderSetup();
 
-            this.texture = new Bitmap((int)this.W, (int)this.H);
+            this.texture = new Bitmap(4 * (int)this.W, 4 * (int)this.H);
 
             this.RenderUpdateTexture(Graphics.FromImage(this.texture));
 
@@ -467,11 +467,11 @@ namespace NodeGraph.TK
         /// </summary>
         public virtual void RenderUpdateTexture(Graphics g)
         {
-            float zoom = 1.0f;
+            float zoom = 4.0f;
 
             bool shadow = false;
 
-            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            g.SmoothingMode      = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
 
             //Vector2 CtrlPos = view.Panel.ViewToControl(new Vector2(x, y));
@@ -488,31 +488,18 @@ namespace NodeGraph.TK
                     (int)this.W + (int)(0.2f * this.W), (int)this.H + (int)(0.2f * this.H)));
             }
             
-            // Node Todo: change how selection works
-            if (!this.selected)
-            {
-                g.FillRectangle(new SolidBrush(this.NodeFillColor), ViewRectangle);
+
+            g.FillRectangle(new SolidBrush(this.NodeFillColor), ViewRectangle);
                 
-                g.FillRectangle(new SolidBrush(Util.VectorToColor(view.ColorNodeHeader)), new Rectangle(ViewRectangle.X, ViewRectangle.Y, ViewRectangle.Width, (int)(view.SizeNodeHeader * zoom)));
-                g.DrawRectangle(new Pen(Util.VectorToColor(view.ColorNodeOutline), 1.0f), ViewRectangle);
-            }
-            else
-            {
-                g.FillRectangle(new SolidBrush(Util.VectorToColor(view.ColorNodeFillSelected)), ViewRectangle);
-
-                g.FillRectangle(new SolidBrush(Util.VectorToColor(view.ColorNodeHeader)), new Rectangle(ViewRectangle.X, ViewRectangle.Y, ViewRectangle.Width, (int)(view.SizeNodeHeader * zoom)));
-                g.DrawRectangle(new Pen(Util.VectorToColor(view.ColorNodeOutlineSelected), 1.0f), ViewRectangle);
-            }
-
+            g.FillRectangle(new SolidBrush(Util.VectorToColor(view.ColorNodeHeader)), new Rectangle(ViewRectangle.X, ViewRectangle.Y, ViewRectangle.Width, (int)(view.SizeNodeHeader * zoom)));
+            g.DrawRectangle(new Pen(Util.VectorToColor(view.ColorNodeOutline), 1.0f), ViewRectangle);
+           
             // Node Text
-            if (zoom > 0.8f)
-            {                
-                //g.DrawString(this.Name, new Font(view.Font_Node_Title.Name, view.Font_Node_Title.Size * zoom), new SolidBrush(Util.VectorToColor(view.ColorNodeTextShadow)), 
-                //    new Point(ViewRectangle.X + (int)(2.0f * zoom) + 1, ViewRectangle.Y + (int)(2.0f * zoom) + 1));
+            //g.DrawString(this.Name, new Font(view.Font_Node_Title.Name, view.Font_Node_Title.Size * zoom), new SolidBrush(Util.VectorToColor(view.ColorNodeTextShadow)), 
+            //    new Point(ViewRectangle.X + (int)(2.0f * zoom) + 1, ViewRectangle.Y + (int)(2.0f * zoom) + 1));
 
-                g.DrawString(this.Name, new Font(view.Font_Node_Title.Name, view.Font_Node_Title.Size * zoom), new SolidBrush(Util.VectorToColor(view.ColorNodeText)), 
-                    new Point(ViewRectangle.X + (int)(2.0f * zoom) + 0, ViewRectangle.Y + (int)(2.0f * zoom) + 3));
-            }
+            g.DrawString(this.Name, new Font(view.Font_Node_Title.Name, view.Font_Node_Title.Size * zoom), new SolidBrush(Util.VectorToColor(view.ColorNodeText)), 
+                new Point(ViewRectangle.X + (int)(2.0f * zoom) + 0, ViewRectangle.Y + (int)(2.0f * zoom) + 3));
 
             // Connectors Input
             for (int i = 0; i < this.connectors.Count; i++)
