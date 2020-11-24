@@ -12,6 +12,7 @@ All dependencies are using NuGet package manager.
 
 ### History
 
+* 2020-11-24: Improvement of Node Rendering (Selection State, SuperSampling)
 * 2020-03-05: Rewritten Node Rendering (VBOs + Textures)
 * 2019-10-14: Added Drag&Drop Functionality
 * 2019-10-13: Primitive Node and Link Rendering, Basic Interaction
